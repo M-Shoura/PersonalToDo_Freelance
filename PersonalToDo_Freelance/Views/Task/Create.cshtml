@@ -1,0 +1,55 @@
+@model PersonalToDo_Freelance.Application.ViewModels.TaskCreateViewModel
+@{
+    ViewData["Title"] = "Create Task";
+    var categories = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>;
+}
+<h2>Create Task</h2>
+<form asp-action="Create" method="post">
+    <div class="mb-3">
+        <label asp-for="Title" class="form-label"></label>
+        <input asp-for="Title" class="form-control" />
+        <span asp-validation-for="Title" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Description" class="form-label"></label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="CategoryId" class="form-label">Category</label>
+        <select asp-for="CategoryId" class="form-select">
+            <option value=""></option>
+            @if (categories != null)
+            {
+                foreach (var c in categories)
+                {
+                    <option value="@c.Id">@c.Name</option>
+                }
+            }
+        </select>
+        <span asp-validation-for="CategoryId" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Priority" class="form-label">Priority</label>
+        <select asp-for="Priority" class="form-select">
+            @foreach (var p in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TaskPriority)))
+            {
+                <option value="@((int)p)">@p</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="StartDate" class="form-label"></label>
+        <input asp-for="StartDate" class="form-control" type="date" />
+    </div>
+    <div class="mb-3">
+        <label asp-for="DueDate" class="form-label"></label>
+        <input asp-for="DueDate" class="form-control" type="date" />
+    </div>
+    <button type="submit" class="btn btn-primary">Create</button>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
