@@ -9,13 +9,9 @@ namespace PersonalToDo_Freelance.Infrastructure
     {
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
-            // Common infrastructure services
             services.AddHttpContextAccessor();
 
-            // Current user accessor
             services.AddScoped<ICurrentUserService, CurrentUserService>();
-
-            // Add other infrastructure services here (email, file storage, etc.)
 
             return services;
         }

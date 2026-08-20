@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using PersonalToDo_Freelance.Models;
+using PersonalToDo_Freelance.Domain.Entities;
 
 namespace PersonalToDo_Freelance.Data
 {
@@ -11,6 +12,9 @@ namespace PersonalToDo_Freelance.Data
         {
         }
 
-        // Future DbSets (Tasks, Categories, etc.) will be added here
+        public DbSet<Category> Categories { get; set; } = null!;
+        public DbSet<TodoTask> Tasks { get; set; } = null!;
+        public DbSet<RecurrenceRule> RecurrenceRules { get; set; } = null!;
+        public DbSet<TaskOccurrence> TaskOccurrences { get; set; } = null!;
     }
 }
