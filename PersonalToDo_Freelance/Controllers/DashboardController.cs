@@ -13,9 +13,9 @@ namespace PersonalToDo_Freelance.Controllers
             _taskService = taskService;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index([FromQuery] Application.ViewModels.TaskQueryParameters? q)
         {
-            var items = await _taskService.GetUserTasksAsync();
+            var items = await _taskService.GetUserTasksAsync(q);
             return View(items);
         }
     }

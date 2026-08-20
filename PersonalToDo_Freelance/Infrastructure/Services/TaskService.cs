@@ -85,22 +85,84 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             return (true, null);
         }
 
-        public async Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync()
+        public async Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync(Application.ViewModels.TaskQueryParameters? query = null)
         {
             var userId = _user.UserId ?? string.Empty;
-            var list = await _db.Tasks.AsNoTracking()
-                .Where(t => t.UserId == userId && !t.IsDeleted)
-                .OrderBy(t => t.DueDate)
-                .Select(t => new TaskListItemViewModel
+            query ??= new Application.ViewModels.TaskQueryParameters();
+            var q = _db.Tasks.AsNoTracking().Where(t => t.UserId == userId && !t.IsDeleted);
+            if (query.Status.HasValue)
+                q = q.Where(t => t.Status == query.Status.Value);
+            if (query.CategoryId.HasValue)
+                q = q.Where(t => t.CategoryId == query.CategoryId.Value);
+            if (query.Priority.HasValue)
+                q = q.Where(t => t.Priority == query.Priority.Value);
+            var now = DateTime.UtcNow.Date;
+            if (query.DateFilter != Application.ViewModels.DateRangeFilter.None)
+            {
+                switch (query.DateFilter)
                 {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Priority = t.Priority,
-                    DueDate = t.DueDate,
-                    Status = t.Status,
-                    IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
-                })
-                .ToListAsync();
+                    case Application.ViewModels.DateRangeFilter.Today:
+                        q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date == now);
+                        break;
+                    case Application.ViewModels.DateRangeFilter.Tomorrow:
+                        var tom = now.AddDays(1);
+                        q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date == tom);
+                        break;
+                    case Application.ViewModels.DateRangeFilter.ThisWeek:
+                        var start = now;
+                        var end = now.AddDays(7);
+                        q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date >= start && t.DueDate.Value.Date <= end);
+                        break;
+                    case Application.ViewModels.DateRangeFilter.ThisMonth:
+                        var monthStart = new DateTime(now.Year, now.Month, 1);
+                        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+                        q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date >= monthStart && t.DueDate.Value.Date <= monthEnd);
+                        break;
+                    case Application.ViewModels.DateRangeFilter.Custom:
+                        if (query.CustomStart.HasValue)
+                            q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date >= query.CustomStart.Value.Date);
+                        if (query.CustomEnd.HasValue)
+                            q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date <= query.CustomEnd.Value.Date);
+                        break;
+                    case Application.ViewModels.DateRangeFilter.Overdue:
+                        q = q.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date < now && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled);
+                        break;
+                }
+            }
+            IOrderedQueryable<Domain.Entities.TodoTask>? ordered = null;
+            switch (query.SortBy)
+            {
+                case Application.ViewModels.TaskSortField.DueDate:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.DueDate) : q.OrderByDescending(t => t.DueDate);
+                    break;
+                case Application.ViewModels.TaskSortField.Priority:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.Priority) : q.OrderByDescending(t => t.Priority);
+                    break;
+                case Application.ViewModels.TaskSortField.CreatedAt:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.CreatedAt) : q.OrderByDescending(t => t.CreatedAt);
+                    break;
+                case Application.ViewModels.TaskSortField.UpdatedAt:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.UpdatedAt) : q.OrderByDescending(t => t.UpdatedAt);
+                    break;
+                case Application.ViewModels.TaskSortField.CompletedAt:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.CompletedAt) : q.OrderByDescending(t => t.CompletedAt);
+                    break;
+                case Application.ViewModels.TaskSortField.Title:
+                    ordered = query.SortDirection == Application.ViewModels.SortDirection.Asc ? q.OrderBy(t => t.Title) : q.OrderByDescending(t => t.Title);
+                    break;
+                default:
+                    ordered = q.OrderBy(t => t.DueDate);
+                    break;
+            }
+            var list = await ordered.Select(t => new TaskListItemViewModel
+            {
+                Id = t.Id,
+                Title = t.Title,
+                Priority = t.Priority,
+                DueDate = t.DueDate,
+                Status = t.Status,
+                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < now && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
+            }).ToListAsync();
             return list;
         }
 
