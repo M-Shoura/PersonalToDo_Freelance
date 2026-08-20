@@ -93,6 +93,44 @@ namespace PersonalToDo_Freelance.Controllers
             if (!succeeded) TempData["Error"] = error;
             return RedirectToAction("Index", "Dashboard");
         }
+        [HttpGet]
+        public async Task<IActionResult> Reschedule(long id)
+        {
+            var vm = await _taskService.GetForEditAsync(id);
+            if (vm == null) return NotFound();
+            var model = new Application.ViewModels.TaskRescheduleViewModel { Id = id, NewDueDate = DateTime.UtcNow.Date.AddDays(1) };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reschedule(Application.ViewModels.TaskRescheduleViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            var (succeeded, error) = await _taskService.RescheduleAsync(model.Id, model.NewDueDate);
+            if (!succeeded)
+            {
+                ModelState.AddModelError(string.Empty, error ?? "");
+                return View(model);
+            }
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> BulkReschedule()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> BulkReschedule(Application.ViewModels.TaskRescheduleViewModel model)
+        {
+            if (!ModelState.IsValid) return View(model);
+            var count = await _taskService.BulkRescheduleOverdueAsync(model.NewDueDate);
+            TempData["Message"] = $"Rescheduled {count} overdue tasks.";
+            return RedirectToAction("Index", "Dashboard");
+        }
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeStatus(long id, PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus status)

@@ -19,6 +19,40 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             _user = user;
         }
 
+        public async Task<(bool Succeeded, string? Error)> RescheduleAsync(long id, DateTime newDueDate)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var t = await _db.Tasks.Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted).FirstOrDefaultAsync();
+            if (t == null) return (false, "Task not found.");
+            if (t.Status == Domain.Enums.TodoTaskStatus.Completed || t.Status == Domain.Enums.TodoTaskStatus.Cancelled)
+                return (false, "Cannot reschedule completed or cancelled tasks.");
+            var newDate = newDueDate.Date;
+            var today = DateTime.UtcNow.Date;
+            if (newDate < today) return (false, "New due date must be today or later.");
+            t.DueDate = newDate;
+            if (t.StartDate.HasValue && t.StartDate.Value.Date > newDate) t.StartDate = newDate;
+            t.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return (true, null);
+        }
+
+        public async Task<int> BulkRescheduleOverdueAsync(DateTime newDueDate)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var today = DateTime.UtcNow.Date;
+            var newDate = newDueDate.Date;
+            if (newDate < today) return 0;
+            var items = await _db.Tasks.Where(t => t.UserId == userId && !t.IsDeleted && t.DueDate.HasValue && t.DueDate.Value.Date < today && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).ToListAsync();
+            foreach (var t in items)
+            {
+                t.DueDate = newDate;
+                if (t.StartDate.HasValue && t.StartDate.Value.Date > newDate) t.StartDate = newDate;
+                t.UpdatedAt = DateTime.UtcNow;
+            }
+            await _db.SaveChangesAsync();
+            return items.Count;
+        }
+
         public async Task<TaskDetailsViewModel?> GetDetailsAsync(long id)
         {
             var userId = _user.UserId ?? string.Empty;

@@ -1,0 +1,19 @@
+@model PersonalToDo_Freelance.Application.ViewModels.TaskRescheduleViewModel
+@{
+    ViewData["Title"] = "Reschedule Task";
+}
+<h2>Reschedule Task</h2>
+<form asp-action="Reschedule" method="post">
+    <input type="hidden" asp-for="Id" />
+    <div class="mb-3">
+        <label asp-for="NewDueDate" class="form-label"></label>
+        <input asp-for="NewDueDate" class="form-control" type="date" />
+        <span asp-validation-for="NewDueDate" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Reschedule</button>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
