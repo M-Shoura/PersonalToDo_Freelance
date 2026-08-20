@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using PersonalToDo_Freelance.Data;
 using PersonalToDo_Freelance.Models;
+using PersonalToDo_Freelance.Infrastructure;
+using PersonalToDo_Freelance.Application;
 
 namespace PersonalToDo_Freelance
 {
@@ -32,6 +34,10 @@ namespace PersonalToDo_Freelance
                 })
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            // Register application & infrastructure services
+            builder.Services.AddInfrastructureServices(builder.Configuration);
+            builder.Services.AddApplicationServices();
 
             var app = builder.Build();
 
