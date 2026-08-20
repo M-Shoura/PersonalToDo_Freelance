@@ -1,0 +1,41 @@
+@model PersonalToDo_Freelance.Application.ViewModels.TaskDetailsViewModel
+@{
+    ViewData["Title"] = "Task Details";
+}
+<h2>Task Details</h2>
+<dl class="row">
+    <dt class="col-sm-2">Title</dt>
+    <dd class="col-sm-10">@Model.Title</dd>
+
+    <dt class="col-sm-2">Description</dt>
+    <dd class="col-sm-10">@Model.Description</dd>
+
+    <dt class="col-sm-2">Category</dt>
+    <dd class="col-sm-10">@Model.CategoryName</dd>
+
+    <dt class="col-sm-2">Priority</dt>
+    <dd class="col-sm-10">@Model.Priority</dd>
+
+    <dt class="col-sm-2">Status</dt>
+    <dd class="col-sm-10">@Model.Status</dd>
+
+    <dt class="col-sm-2">Start Date</dt>
+    <dd class="col-sm-10">@Model.StartDate?.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-2">Due Date</dt>
+    <dd class="col-sm-10">@Model.DueDate?.ToString("yyyy-MM-dd")</dd>
+
+    <dt class="col-sm-2">Created</dt>
+    <dd class="col-sm-10">@Model.CreatedAt</dd>
+
+    <dt class="col-sm-2">Updated</dt>
+    <dd class="col-sm-10">@Model.UpdatedAt</dd>
+</dl>
+
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display:inline;">
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?');">Delete</button>
+    </form>
+    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Back</a>
+</p>

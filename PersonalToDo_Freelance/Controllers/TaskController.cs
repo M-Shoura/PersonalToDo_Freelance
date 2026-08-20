@@ -46,5 +46,52 @@ namespace PersonalToDo_Freelance.Controllers
             }
             return RedirectToAction("Index", "Dashboard");
         }
+        [HttpGet]
+        public async Task<IActionResult> Details(long id)
+        {
+            var vm = await _taskService.GetDetailsAsync(id);
+            if (vm == null) return NotFound();
+            return View(vm);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Edit(long id)
+        {
+            var vm = await _taskService.GetForEditAsync(id);
+            if (vm == null) return NotFound();
+            var cats = await _categoryService.GetAllAsync();
+            ViewData["Categories"] = cats;
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(TaskEditViewModel model)
+        {
+            var cats = await _categoryService.GetAllAsync();
+            ViewData["Categories"] = cats;
+            if (!ModelState.IsValid) return View(model);
+            if (model.StartDate.HasValue && model.DueDate.HasValue && model.StartDate > model.DueDate)
+            {
+                ModelState.AddModelError(string.Empty, "Start date cannot be after due date.");
+                return View(model);
+            }
+            var (succeeded, error) = await _taskService.UpdateAsync(model);
+            if (!succeeded)
+            {
+                ModelState.AddModelError(string.Empty, error ?? "");
+                return View(model);
+            }
+            return RedirectToAction("Index", "Dashboard");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(long id)
+        {
+            var (succeeded, error) = await _taskService.DeleteAsync(id);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Index", "Dashboard");
+        }
     }
 }
