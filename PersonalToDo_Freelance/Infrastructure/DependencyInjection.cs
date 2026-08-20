@@ -13,6 +13,8 @@ namespace PersonalToDo_Freelance.Infrastructure
 
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
+            services.AddScoped<ICategoryService, CategoryService>();
+
             return services;
         }
     }
