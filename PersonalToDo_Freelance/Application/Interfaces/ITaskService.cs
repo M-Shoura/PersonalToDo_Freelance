@@ -11,5 +11,6 @@ namespace PersonalToDo_Freelance.Application.Interfaces
         Task<(bool Succeeded, string? Error)> UpdateAsync(TaskEditViewModel model);
         Task<(bool Succeeded, string? Error)> DeleteAsync(long id);
         Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long id, Domain.Enums.TodoTaskStatus newStatus);
+        Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync();
     }
 }

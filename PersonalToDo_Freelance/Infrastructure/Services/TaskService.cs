@@ -85,6 +85,25 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             return (true, null);
         }
 
+        public async Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync()
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var list = await _db.Tasks.AsNoTracking()
+                .Where(t => t.UserId == userId && !t.IsDeleted)
+                .OrderBy(t => t.DueDate)
+                .Select(t => new TaskListItemViewModel
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Priority = t.Priority,
+                    DueDate = t.DueDate,
+                    Status = t.Status,
+                    IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
+                })
+                .ToListAsync();
+            return list;
+        }
+
         public async Task<(bool Succeeded, string? Error)> DeleteAsync(long id)
         {
             var userId = _user.UserId ?? string.Empty;

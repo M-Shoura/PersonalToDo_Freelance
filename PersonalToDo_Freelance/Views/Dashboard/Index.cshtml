@@ -1,0 +1,51 @@
+@model IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.TaskListItemViewModel>
+@{
+    ViewData["Title"] = "Dashboard";
+}
+<h2>Dashboard</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>Due</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var t in Model)
+{
+    var rowClass = t.IsOverdue ? "table-danger" : "";
+    <tr class="@rowClass">
+        <td>@t.Title</td>
+        <td>
+            @switch (t.Priority)
+            {
+                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Low:
+                    <span class="badge bg-secondary">Low</span>
+                    break;
+                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium:
+                    <span class="badge bg-primary">Medium</span>
+                    break;
+                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.High:
+                    <span class="badge bg-warning text-dark">High</span>
+                    break;
+                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical:
+                    <span class="badge bg-danger">Critical</span>
+                    break;
+            }
+        </td>
+        <td>@(t.DueDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+        <td>@t.Status</td>
+        <td>
+            <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary">View</a>
+            <form asp-controller="Task" asp-action="ChangeStatus" method="post" style="display:inline;" asp-route-id="@t.Id">
+                <input type="hidden" name="status" value="@( (int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed )" />
+                <button type="submit" class="btn btn-sm btn-success" title="Mark completed">✓</button>
+            </form>
+        </td>
+    </tr>
+}
+    </tbody>
+</table>
