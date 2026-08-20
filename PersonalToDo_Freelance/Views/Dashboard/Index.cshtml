@@ -3,6 +3,14 @@
     ViewData["Title"] = "Dashboard";
 }
 <h2>Dashboard</h2>
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto flex-grow-1">
+        <input type="search" name="SearchTerm" class="form-control" placeholder="Search tasks..." value="@(ViewContext.HttpContext.Request.Query["SearchTerm"].ToString())" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Search</button>
+    </div>
+</form>
 <table class="table">
     <thead>
         <tr>

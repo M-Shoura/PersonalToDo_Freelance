@@ -39,6 +39,7 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public DateRangeFilter DateFilter { get; set; } = DateRangeFilter.None;
         public DateTime? CustomStart { get; set; }
         public DateTime? CustomEnd { get; set; }
+        public string? SearchTerm { get; set; }
         public TaskSortField SortBy { get; set; } = TaskSortField.DueDate;
         public SortDirection SortDirection { get; set; } = SortDirection.Asc;
     }

@@ -96,6 +96,12 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 q = q.Where(t => t.CategoryId == query.CategoryId.Value);
             if (query.Priority.HasValue)
                 q = q.Where(t => t.Priority == query.Priority.Value);
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            {
+                var s = query.SearchTerm.Trim();
+                var sLower = s.ToLower();
+                q = q.Where(t => (t.Title != null && EF.Functions.Like(t.Title.ToLower(), "%" + sLower + "%")) || (t.Description != null && EF.Functions.Like(t.Description.ToLower(), "%" + sLower + "%")));
+            }
             var now = DateTime.UtcNow.Date;
             if (query.DateFilter != Application.ViewModels.DateRangeFilter.None)
             {
