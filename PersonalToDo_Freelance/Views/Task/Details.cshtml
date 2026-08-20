@@ -30,6 +30,12 @@
 
     <dt class="col-sm-2">Updated</dt>
     <dd class="col-sm-10">@Model.UpdatedAt</dd>
+
+    <dt class="col-sm-2">Completed At</dt>
+    <dd class="col-sm-10">@Model.CompletedAt</dd>
+
+    <dt class="col-sm-2">Overdue</dt>
+    <dd class="col-sm-10">@(Model.IsOverdue ? "Yes" : "No")</dd>
 </dl>
 
 <p>

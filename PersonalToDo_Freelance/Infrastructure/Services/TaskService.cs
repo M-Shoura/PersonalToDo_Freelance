@@ -39,7 +39,9 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 StartDate = t.StartDate,
                 DueDate = t.DueDate,
                 CreatedAt = t.CreatedAt,
-                UpdatedAt = t.UpdatedAt
+                UpdatedAt = t.UpdatedAt,
+                CompletedAt = t.CompletedAt,
+                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
             };
         }
 
@@ -89,6 +91,31 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             var t = await _db.Tasks.Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted).FirstOrDefaultAsync();
             if (t == null) return (false, "Task not found.");
             t.IsDeleted = true;
+            t.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return (true, null);
+        }
+
+        public async Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long id, Domain.Enums.TodoTaskStatus newStatus)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var t = await _db.Tasks.Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted).FirstOrDefaultAsync();
+            if (t == null) return (false, "Task not found.");
+            var old = t.Status;
+            if (old == newStatus) return (true, null);
+            if (newStatus == Domain.Enums.TodoTaskStatus.Completed)
+            {
+                t.Status = newStatus;
+                t.CompletedAt = DateTime.UtcNow;
+            }
+            else
+            {
+                if (old == Domain.Enums.TodoTaskStatus.Completed)
+                {
+                    t.CompletedAt = null;
+                }
+                t.Status = newStatus;
+            }
             t.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             return (true, null);

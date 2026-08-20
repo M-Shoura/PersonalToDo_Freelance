@@ -17,6 +17,8 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public DateTime? DueDate { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? UpdatedAt { get; set; }
+        public DateTime? CompletedAt { get; set; }
+        public bool IsOverdue { get; set; }
     }
 
     public class TaskEditViewModel

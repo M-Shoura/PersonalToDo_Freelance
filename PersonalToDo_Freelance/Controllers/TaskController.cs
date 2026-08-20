@@ -93,5 +93,13 @@ namespace PersonalToDo_Freelance.Controllers
             if (!succeeded) TempData["Error"] = error;
             return RedirectToAction("Index", "Dashboard");
         }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeStatus(long id, PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus status)
+        {
+            var (succeeded, error) = await _taskService.ChangeStatusAsync(id, status);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Index", "Dashboard");
+        }
     }
 }
