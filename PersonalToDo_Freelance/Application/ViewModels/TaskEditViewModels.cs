@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using PersonalToDo_Freelance.Domain.Enums;
 
@@ -21,7 +22,7 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public bool IsOverdue { get; set; }
     }
 
-    public class TaskEditViewModel
+    public class TaskEditViewModel : IValidatableObject
     {
         public long Id { get; set; }
 
@@ -40,5 +41,15 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public DateTime? StartDate { get; set; }
 
         public DateTime? DueDate { get; set; }
+
+        public RecurrenceRuleViewModel Recurrence { get; set; } = new();
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            foreach (var result in Recurrence.Validate(validationContext))
+            {
+                yield return result;
+            }
+        }
     }
 }

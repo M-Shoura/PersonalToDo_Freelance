@@ -1,0 +1,85 @@
+@model PersonalToDo_Freelance.Application.ViewModels.RecurrenceRuleViewModel
+@using PersonalToDo_Freelance.Domain.Enums
+
+<div class="border rounded p-3 mb-3" id="recurrence-fields">
+    <div class="form-check mb-3">
+        <input asp-for="IsRecurring" class="form-check-input" />
+        <label asp-for="IsRecurring" class="form-check-label">Repeat this task</label>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label asp-for="Type" class="form-label">Repeats</label>
+            <select asp-for="Type" class="form-select">
+                <option value="@((int)RecurrenceType.None)">Does not repeat</option>
+                <option value="@((int)RecurrenceType.Daily)">Daily</option>
+                <option value="@((int)RecurrenceType.Weekly)">Weekly</option>
+                <option value="@((int)RecurrenceType.Monthly)">Monthly</option>
+                <option value="@((int)RecurrenceType.Yearly)">Yearly</option>
+                <option value="@((int)RecurrenceType.Custom)">Custom</option>
+            </select>
+            <span asp-validation-for="Type" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="Interval" class="form-label">Every</label>
+            <input asp-for="Interval" class="form-control" type="number" min="1" />
+            <span asp-validation-for="Interval" class="text-danger"></span>
+        </div>
+
+        <div class="col-md-4">
+            <label asp-for="EndCondition" class="form-label">Ends</label>
+            <select asp-for="EndCondition" class="form-select">
+                <option value="0">Never</option>
+                <option value="1">On date</option>
+                <option value="2">After occurrences</option>
+            </select>
+        </div>
+    </div>
+
+    <input asp-for="DaysOfWeek" type="hidden" id="Recurrence_DaysOfWeek" />
+    <div class="mt-3">
+        <label class="form-label">Weekdays</label>
+        <div class="d-flex flex-wrap gap-2">
+            @foreach (var day in new[] { DaysOfWeekFlags.Sunday, DaysOfWeekFlags.Monday, DaysOfWeekFlags.Tuesday, DaysOfWeekFlags.Wednesday, DaysOfWeekFlags.Thursday, DaysOfWeekFlags.Friday, DaysOfWeekFlags.Saturday })
+            {
+                var selected = Model.DaysOfWeek.HasFlag(day);
+                <label class="form-check">
+                    <input class="form-check-input recurrence-weekday" type="checkbox" value="@((int)day)" checked="@selected" />
+                    <span class="form-check-label">@day</span>
+                </label>
+            }
+        </div>
+        <span asp-validation-for="DaysOfWeek" class="text-danger"></span>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-md-6">
+            <label asp-for="EndDate" class="form-label">End date</label>
+            <input asp-for="EndDate" class="form-control" type="date" />
+            <span asp-validation-for="EndDate" class="text-danger"></span>
+        </div>
+        <div class="col-md-6">
+            <label asp-for="OccurrenceCount" class="form-label">Occurrence count</label>
+            <input asp-for="OccurrenceCount" class="form-control" type="number" min="1" />
+            <span asp-validation-for="OccurrenceCount" class="text-danger"></span>
+        </div>
+    </div>
+</div>
+
+<script>
+    (() => {
+        const hidden = document.getElementById('Recurrence_DaysOfWeek');
+        const boxes = document.querySelectorAll('.recurrence-weekday');
+        const update = () => {
+            let value = 0;
+            boxes.forEach(box => {
+                if (box.checked) value |= Number(box.value);
+            });
+            hidden.value = value;
+        };
+
+        boxes.forEach(box => box.addEventListener('change', update));
+        update();
+    })();
+</script>

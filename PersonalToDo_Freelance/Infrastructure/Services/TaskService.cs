@@ -5,6 +5,7 @@ using PersonalToDo_Freelance.Application.Interfaces;
 using PersonalToDo_Freelance.Application.ViewModels;
 using PersonalToDo_Freelance.Data;
 using PersonalToDo_Freelance.Domain.Entities;
+using PersonalToDo_Freelance.Domain.Enums;
 
 namespace PersonalToDo_Freelance.Infrastructure.Services
 {
@@ -82,7 +83,10 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
         public async Task<TaskEditViewModel?> GetForEditAsync(long id)
         {
             var userId = _user.UserId ?? string.Empty;
-            var t = await _db.Tasks.AsNoTracking().Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted).FirstOrDefaultAsync();
+            var t = await _db.Tasks.AsNoTracking()
+                .Include(x => x.RecurrenceRule)
+                .Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted)
+                .FirstOrDefaultAsync();
             if (t == null) return null;
             return new TaskEditViewModel
             {
@@ -92,14 +96,18 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 CategoryId = t.CategoryId,
                 Priority = t.Priority,
                 StartDate = t.StartDate,
-                DueDate = t.DueDate
+                DueDate = t.DueDate,
+                Recurrence = ToRecurrenceViewModel(t.RecurrenceRule)
             };
         }
 
         public async Task<(bool Succeeded, string? Error)> UpdateAsync(TaskEditViewModel model)
         {
             var userId = _user.UserId ?? string.Empty;
-            var t = await _db.Tasks.Where(x => x.Id == model.Id && x.UserId == userId && !x.IsDeleted).FirstOrDefaultAsync();
+            var t = await _db.Tasks
+                .Include(x => x.RecurrenceRule)
+                .Where(x => x.Id == model.Id && x.UserId == userId && !x.IsDeleted)
+                .FirstOrDefaultAsync();
             if (t == null) return (false, "Task not found.");
             if (model.CategoryId.HasValue)
             {
@@ -108,6 +116,8 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             }
             if (model.StartDate.HasValue && model.DueDate.HasValue && model.StartDate > model.DueDate)
                 return (false, "Start date cannot be after due date.");
+            var recurrenceError = ValidateRecurrence(model.Recurrence);
+            if (recurrenceError != null) return (false, recurrenceError);
             t.Title = model.Title;
             t.Description = model.Description;
             t.CategoryId = model.CategoryId;
@@ -115,6 +125,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             t.StartDate = model.StartDate;
             t.DueDate = model.DueDate;
             t.UpdatedAt = DateTime.UtcNow;
+            ApplyRecurrence(t, model.Recurrence, userId);
             await _db.SaveChangesAsync();
             return (true, null);
         }
@@ -252,6 +263,8 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             }
             if (model.StartDate.HasValue && model.DueDate.HasValue && model.StartDate > model.DueDate)
                 return (false, "Start date cannot be after due date.", null);
+            var recurrenceError = ValidateRecurrence(model.Recurrence);
+            if (recurrenceError != null) return (false, recurrenceError, null);
             var task = new TodoTask
             {
                 UserId = userId,
@@ -264,9 +277,75 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 DueDate = model.DueDate,
                 CreatedAt = DateTime.UtcNow
             };
+            ApplyRecurrence(task, model.Recurrence, userId);
             _db.Tasks.Add(task);
             await _db.SaveChangesAsync();
             return (true, null, task.Id);
+        }
+
+        private static string? ValidateRecurrence(RecurrenceRuleViewModel recurrence)
+        {
+            var result = recurrence.Validate(new System.ComponentModel.DataAnnotations.ValidationContext(recurrence)).FirstOrDefault();
+            return result?.ErrorMessage;
+        }
+
+        private static RecurrenceRuleViewModel ToRecurrenceViewModel(RecurrenceRule? rule)
+        {
+            if (rule == null || rule.IsDeleted || rule.Type == RecurrenceType.None)
+            {
+                return new RecurrenceRuleViewModel();
+            }
+
+            var endCondition = RecurrenceEndCondition.Never;
+            if (rule.EndDate.HasValue)
+            {
+                endCondition = RecurrenceEndCondition.OnDate;
+            }
+            else if (rule.OccurrenceCount.HasValue)
+            {
+                endCondition = RecurrenceEndCondition.AfterOccurrences;
+            }
+
+            return new RecurrenceRuleViewModel
+            {
+                IsRecurring = true,
+                Type = rule.Type,
+                Interval = rule.Interval,
+                DaysOfWeek = rule.DaysOfWeek,
+                EndCondition = endCondition,
+                EndDate = rule.EndDate,
+                OccurrenceCount = rule.OccurrenceCount
+            };
+        }
+
+        private static void ApplyRecurrence(TodoTask task, RecurrenceRuleViewModel recurrence, string userId)
+        {
+            if (!recurrence.IsRecurring)
+            {
+                if (task.RecurrenceRule != null)
+                {
+                    task.RecurrenceRule.IsDeleted = true;
+                    task.RecurrenceRule.Type = RecurrenceType.None;
+                    task.RecurrenceRule.UpdatedAt = DateTime.UtcNow;
+                }
+
+                return;
+            }
+
+            task.RecurrenceRule ??= new RecurrenceRule
+            {
+                CreatedAt = DateTime.UtcNow
+            };
+
+            task.RecurrenceRule.UserId = userId;
+            task.RecurrenceRule.Type = recurrence.Type;
+            task.RecurrenceRule.Interval = recurrence.Interval;
+            task.RecurrenceRule.DaysOfWeek = recurrence.Type == RecurrenceType.Weekly ? recurrence.DaysOfWeek : DaysOfWeekFlags.None;
+            task.RecurrenceRule.StartDate = task.StartDate?.Date ?? task.DueDate?.Date ?? DateTime.UtcNow.Date;
+            task.RecurrenceRule.EndDate = recurrence.EndCondition == RecurrenceEndCondition.OnDate ? recurrence.EndDate?.Date : null;
+            task.RecurrenceRule.OccurrenceCount = recurrence.EndCondition == RecurrenceEndCondition.AfterOccurrences ? recurrence.OccurrenceCount : null;
+            task.RecurrenceRule.IsDeleted = false;
+            task.RecurrenceRule.UpdatedAt = DateTime.UtcNow;
         }
     }
 }
