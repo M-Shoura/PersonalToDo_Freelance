@@ -19,8 +19,8 @@ namespace PersonalToDo_Freelance.Controllers
         {
             ViewData["Query"] = q ?? new Application.ViewModels.TaskQueryParameters();
             ViewData["Categories"] = await _categoryService.GetAllAsync();
-            var items = await _taskService.GetUserTasksAsync(q);
-            return View(items);
+            var model = await _taskService.GetDashboardAsync(DateTime.UtcNow.Date);
+            return View(model);
         }
     }
 }

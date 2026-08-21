@@ -334,6 +334,52 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             return (true, null, task.Id);
         }
 
+        public async Task<Application.ViewModels.DashboardViewModel> GetDashboardAsync(DateTime? forDate = null)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var date = (forDate ?? DateTime.UtcNow).Date;
+            var next = date.AddDays(1);
+            var baseQ = _db.Tasks.AsNoTracking().Where(t => t.UserId == userId && !t.IsDeleted);
+
+            var totalTodayQ = baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value >= date && t.DueDate.Value < next);
+            var totalToday = await totalTodayQ.CountAsync();
+
+            var completedToday = await baseQ.Where(t => t.CompletedAt.HasValue && t.CompletedAt.Value >= date && t.CompletedAt.Value < next).CountAsync();
+
+            var pendingToday = await totalTodayQ.Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
+
+            var overdue = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value < date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
+
+            var todayTasks = await totalTodayQ
+                .Include(t => t.Category)
+                .Include(t => t.RecurrenceRule)
+                .OrderBy(t => t.DueDate)
+                .Select(t => new Application.ViewModels.TaskListItemViewModel
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    CategoryName = t.Category != null ? t.Category.Name : null,
+                    Priority = t.Priority,
+                    DueDate = t.DueDate,
+                    Status = t.Status,
+                    IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled,
+                    IsRecurring = t.RecurrenceRule != null && !t.RecurrenceRule.IsDeleted && t.RecurrenceRule.Type != RecurrenceType.None
+                })
+                .ToListAsync();
+
+            double rate = totalToday == 0 ? 0 : (double)completedToday / totalToday;
+
+            return new Application.ViewModels.DashboardViewModel
+            {
+                TotalToday = totalToday,
+                CompletedToday = completedToday,
+                PendingToday = pendingToday,
+                Overdue = overdue,
+                CompletionRate = rate,
+                TodayTasks = todayTasks
+            };
+        }
+
         private static string? ValidateRecurrence(RecurrenceRuleViewModel recurrence)
         {
             var result = recurrence.Validate(new System.ComponentModel.DataAnnotations.ValidationContext(recurrence)).FirstOrDefault();
