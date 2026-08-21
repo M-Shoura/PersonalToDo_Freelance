@@ -9,7 +9,10 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public long? RecurrenceRuleId { get; set; }
         public string TaskTitle { get; set; } = null!;
         public DateTime ScheduledDate { get; set; }
+        public DateTime OriginalScheduledDate { get; set; }
         public OccurrenceStatus Status { get; set; }
         public DateTime? CompletedAt { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

@@ -90,8 +90,11 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                         RecurrenceRuleId = o.RecurrenceRuleId,
                         TaskTitle = t.Title,
                         ScheduledDate = o.OccurrenceDate,
+                        OriginalScheduledDate = (o.OriginalOccurrenceDate ?? o.OccurrenceDate).Date,
                         Status = o.Status,
-                        CompletedAt = o.CompletedAt
+                        CompletedAt = o.CompletedAt,
+                        CreatedAt = o.CreatedAt,
+                        UpdatedAt = o.UpdatedAt
                     })
                     .ToList()
             };

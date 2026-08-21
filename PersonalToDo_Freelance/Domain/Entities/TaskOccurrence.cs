@@ -13,6 +13,8 @@ namespace PersonalToDo_Freelance.Domain.Entities
 
         public DateTime OccurrenceDate { get; set; }
 
+        public DateTime? OriginalOccurrenceDate { get; set; }
+
         public OccurrenceStatus Status { get; set; } = OccurrenceStatus.Pending;
 
         public DateTime? CompletedAt { get; set; }

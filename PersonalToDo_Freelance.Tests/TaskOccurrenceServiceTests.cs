@@ -120,6 +120,85 @@ namespace PersonalToDo_Freelance.Tests
         }
 
         [Fact]
+        public async Task Reschedule_OneWeeklyOccurrence_DoesNotChangeRecurrenceRuleOrFutureMondays()
+        {
+            var db = CreateDbContext("occ_reschedule_weekly_future");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Weekly, new DateTime(2026, 8, 3), days: DaysOfWeekFlags.Monday);
+            var service = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            await service.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 17));
+            var occurrence = db.TaskOccurrences.Single(o => o.OccurrenceDate.Date == new DateTime(2026, 8, 17));
+            var ruleId = task.RecurrenceRule!.Id;
+
+            var result = await service.RescheduleAsync(occurrence.Id, new DateTime(2026, 8, 18));
+            await service.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 31));
+
+            Assert.True(result.Succeeded);
+            var rule = db.RecurrenceRules.Find(ruleId)!;
+            Assert.Equal(RecurrenceType.Weekly, rule.Type);
+            Assert.Equal(DaysOfWeekFlags.Monday, rule.DaysOfWeek);
+            Assert.Equal(1, rule.Interval);
+            AssertDates(db, new DateTime(2026, 8, 3), new DateTime(2026, 8, 10), new DateTime(2026, 8, 18), new DateTime(2026, 8, 24), new DateTime(2026, 8, 31));
+            Assert.DoesNotContain(db.TaskOccurrences, o => o.OccurrenceDate.Date == new DateTime(2026, 8, 17));
+            Assert.Equal(new DateTime(2026, 8, 17), db.TaskOccurrences.Single(o => o.OccurrenceDate.Date == new DateTime(2026, 8, 18)).OriginalOccurrenceDate);
+        }
+
+        [Fact]
+        public async Task CompleteAndReopen_UpdateStatusAndCompletionTimestamp()
+        {
+            var db = CreateDbContext("occ_complete_reopen");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Daily, new DateTime(2026, 8, 1));
+            var service = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            await service.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 1));
+            var occurrence = db.TaskOccurrences.Single();
+
+            var complete = await service.ChangeStatusAsync(occurrence.Id, OccurrenceStatus.Completed);
+            var completedOccurrence = db.TaskOccurrences.Find(occurrence.Id)!;
+            Assert.True(complete.Succeeded);
+            Assert.Equal(OccurrenceStatus.Completed, completedOccurrence.Status);
+            Assert.NotNull(completedOccurrence.CompletedAt);
+
+            var reopen = await service.ReopenAsync(occurrence.Id);
+            var reopenedOccurrence = db.TaskOccurrences.Find(occurrence.Id)!;
+
+            Assert.True(reopen.Succeeded);
+            Assert.Equal(OccurrenceStatus.Pending, reopenedOccurrence.Status);
+            Assert.Null(reopenedOccurrence.CompletedAt);
+        }
+
+        [Fact]
+        public async Task Cancel_MarksOccurrenceCancelledWithoutCompletionTimestamp()
+        {
+            var db = CreateDbContext("occ_cancel");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Daily, new DateTime(2026, 8, 1));
+            var service = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            await service.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 1));
+            var occurrence = db.TaskOccurrences.Single();
+
+            var result = await service.ChangeStatusAsync(occurrence.Id, OccurrenceStatus.Cancelled);
+
+            Assert.True(result.Succeeded);
+            Assert.Equal(OccurrenceStatus.Cancelled, db.TaskOccurrences.Find(occurrence.Id)!.Status);
+            Assert.Null(db.TaskOccurrences.Find(occurrence.Id)!.CompletedAt);
+        }
+
+        [Fact]
+        public async Task GetDetails_ReturnsOccurrenceDetails()
+        {
+            var db = CreateDbContext("occ_details");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Daily, new DateTime(2026, 8, 1));
+            var service = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            await service.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 1));
+            var occurrence = db.TaskOccurrences.Single();
+
+            var details = await service.GetDetailsAsync(occurrence.Id);
+
+            Assert.NotNull(details);
+            Assert.Equal(occurrence.Id, details!.Id);
+            Assert.Equal(new DateTime(2026, 8, 1), details.ScheduledDate);
+            Assert.Equal(new DateTime(2026, 8, 1), details.OriginalScheduledDate);
+        }
+
+        [Fact]
         public async Task Skip_MarksOnlySelectedOccurrenceSkipped()
         {
             var db = CreateDbContext("occ_skip");

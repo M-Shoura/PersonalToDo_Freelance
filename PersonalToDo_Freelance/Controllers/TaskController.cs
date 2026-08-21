@@ -159,6 +159,23 @@ namespace PersonalToDo_Freelance.Controllers
             return RedirectToAction("Details", new { id = taskId });
         }
 
+        [HttpGet]
+        public async Task<IActionResult> OccurrenceDetails(long occurrenceId)
+        {
+            var vm = await _occurrenceService.GetDetailsAsync(occurrenceId);
+            if (vm == null) return NotFound();
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReopenOccurrence(long occurrenceId, long taskId)
+        {
+            var (succeeded, error) = await _occurrenceService.ReopenAsync(occurrenceId);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id = taskId });
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SkipOccurrence(long occurrenceId, long taskId)

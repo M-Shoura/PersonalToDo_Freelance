@@ -7,7 +7,9 @@ namespace PersonalToDo_Freelance.Application.Interfaces
     {
         Task<IReadOnlyList<TaskOccurrenceViewModel>> GenerateForTaskAsync(long taskId, DateTime windowEndDate);
         Task<IReadOnlyList<TaskOccurrenceViewModel>> GetForTaskAsync(long taskId);
+        Task<TaskOccurrenceViewModel?> GetDetailsAsync(long occurrenceId);
         Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long occurrenceId, OccurrenceStatus status);
+        Task<(bool Succeeded, string? Error)> ReopenAsync(long occurrenceId);
         Task<(bool Succeeded, string? Error)> RescheduleAsync(long occurrenceId, DateTime newScheduledDate);
         Task<(bool Succeeded, string? Error)> SkipAsync(long occurrenceId);
     }

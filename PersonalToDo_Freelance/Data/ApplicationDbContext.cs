@@ -66,10 +66,11 @@ namespace PersonalToDo_Freelance.Data
                 b.ToTable("TaskOccurrences");
                 b.HasKey(x => x.Id);
                 b.Property(x => x.OccurrenceDate).IsRequired();
+                b.Property(x => x.OriginalOccurrenceDate);
                 b.Property(x => x.Status).IsRequired();
                 b.Property(x => x.IsDeleted).IsRequired();
                 b.HasIndex(x => new { x.TodoTaskId, x.OccurrenceDate });
-                b.HasIndex(x => new { x.TodoTaskId, x.RecurrenceRuleId, x.OccurrenceDate }).IsUnique();
+                b.HasIndex(x => new { x.TodoTaskId, x.RecurrenceRuleId, x.OriginalOccurrenceDate }).IsUnique();
                 b.HasOne(x => x.RecurrenceRule).WithMany().HasForeignKey(x => x.RecurrenceRuleId).OnDelete(DeleteBehavior.SetNull);
             });
         }

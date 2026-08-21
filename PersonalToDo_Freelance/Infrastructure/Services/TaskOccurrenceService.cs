@@ -37,7 +37,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             var windowEnd = windowEndDate.Date;
             var existingDates = await _db.TaskOccurrences
                 .Where(o => o.TodoTaskId == task.Id && o.RecurrenceRuleId == rule.Id && !o.IsDeleted)
-                .Select(o => o.OccurrenceDate.Date)
+                .Select(o => (o.OriginalOccurrenceDate ?? o.OccurrenceDate).Date)
                 .ToListAsync();
             var existingDateSet = existingDates.ToHashSet();
 
@@ -54,6 +54,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                     TodoTaskId = task.Id,
                     RecurrenceRuleId = rule.Id,
                     OccurrenceDate = scheduledDate,
+                    OriginalOccurrenceDate = scheduledDate,
                     Status = OccurrenceStatus.Pending,
                     CreatedAt = DateTime.UtcNow
                 });
@@ -78,10 +79,35 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                     RecurrenceRuleId = o.RecurrenceRuleId,
                     TaskTitle = o.TodoTask!.Title,
                     ScheduledDate = o.OccurrenceDate,
+                    OriginalScheduledDate = (o.OriginalOccurrenceDate ?? o.OccurrenceDate).Date,
                     Status = o.Status,
-                    CompletedAt = o.CompletedAt
+                    CompletedAt = o.CompletedAt,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt
                 })
                 .ToListAsync();
+        }
+
+        public async Task<TaskOccurrenceViewModel?> GetDetailsAsync(long occurrenceId)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            return await _db.TaskOccurrences.AsNoTracking()
+                .Include(o => o.TodoTask)
+                .Where(o => o.Id == occurrenceId && o.TodoTask != null && o.TodoTask.UserId == userId && !o.TodoTask.IsDeleted && !o.IsDeleted)
+                .Select(o => new TaskOccurrenceViewModel
+                {
+                    Id = o.Id,
+                    TodoTaskId = o.TodoTaskId,
+                    RecurrenceRuleId = o.RecurrenceRuleId,
+                    TaskTitle = o.TodoTask!.Title,
+                    ScheduledDate = o.OccurrenceDate,
+                    OriginalScheduledDate = (o.OriginalOccurrenceDate ?? o.OccurrenceDate).Date,
+                    Status = o.Status,
+                    CompletedAt = o.CompletedAt,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt
+                })
+                .FirstOrDefaultAsync();
         }
 
         public async Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long occurrenceId, OccurrenceStatus status)
@@ -94,6 +120,11 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             occurrence.UpdatedAt = DateTime.UtcNow;
             await _db.SaveChangesAsync();
             return (true, null);
+        }
+
+        public Task<(bool Succeeded, string? Error)> ReopenAsync(long occurrenceId)
+        {
+            return ChangeStatusAsync(occurrenceId, OccurrenceStatus.Pending);
         }
 
         public async Task<(bool Succeeded, string? Error)> RescheduleAsync(long occurrenceId, DateTime newScheduledDate)
