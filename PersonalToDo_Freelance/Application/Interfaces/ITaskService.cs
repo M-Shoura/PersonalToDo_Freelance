@@ -14,5 +14,6 @@ namespace PersonalToDo_Freelance.Application.Interfaces
         Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync(Application.ViewModels.TaskQueryParameters? query = null);
         Task<(bool Succeeded, string? Error)> RescheduleAsync(long id, DateTime newDueDate);
         Task<int> BulkRescheduleOverdueAsync(DateTime newDueDate);
+        Task<(bool Succeeded, string? Error)> StopRecurrenceAsync(long id, DateTime? effectiveEndDate = null);
     }
 }

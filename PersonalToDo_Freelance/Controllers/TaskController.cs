@@ -152,6 +152,15 @@ namespace PersonalToDo_Freelance.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        public async Task<IActionResult> StopRecurrence(long id)
+        {
+            var (succeeded, error) = await _taskService.StopRecurrenceAsync(id);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeOccurrenceStatus(long occurrenceId, PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus status, long taskId)
         {
             var (succeeded, error) = await _occurrenceService.ChangeStatusAsync(occurrenceId, status);

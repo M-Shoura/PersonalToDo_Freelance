@@ -50,6 +50,9 @@
             <button type="submit" class="btn btn-outline-primary">Generate</button>
         </div>
     </form>
+    <form asp-action="StopRecurrence" asp-route-id="@Model.Id" method="post" class="mb-3">
+        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Stop future recurrence for this task?');">Stop Recurrence</button>
+    </form>
 
     @if (Model.Occurrences.Count == 0)
     {

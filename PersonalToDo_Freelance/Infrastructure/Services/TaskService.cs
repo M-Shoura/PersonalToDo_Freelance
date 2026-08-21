@@ -273,6 +273,32 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             return (true, null);
         }
 
+        public async Task<(bool Succeeded, string? Error)> StopRecurrenceAsync(long id, DateTime? effectiveEndDate = null)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var task = await _db.Tasks
+                .Include(x => x.RecurrenceRule)
+                .Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted)
+                .FirstOrDefaultAsync();
+
+            if (task == null) return (false, "Task not found.");
+            if (task.RecurrenceRule == null || task.RecurrenceRule.IsDeleted || task.RecurrenceRule.Type == RecurrenceType.None)
+                return (false, "Task is not recurring.");
+
+            var endDate = (effectiveEndDate ?? DateTime.UtcNow.Date).Date;
+            if (task.RecurrenceRule.EndDate.HasValue && task.RecurrenceRule.EndDate.Value.Date <= endDate)
+            {
+                return (true, null);
+            }
+
+            task.RecurrenceRule.EndDate = endDate;
+            task.RecurrenceRule.OccurrenceCount = null;
+            task.RecurrenceRule.UpdatedAt = DateTime.UtcNow;
+            task.UpdatedAt = DateTime.UtcNow;
+            await _db.SaveChangesAsync();
+            return (true, null);
+        }
+
         public async Task<(bool Succeeded, string? Error, long? Id)> CreateAsync(TaskCreateViewModel model)
         {
             var userId = _user.UserId ?? string.Empty;

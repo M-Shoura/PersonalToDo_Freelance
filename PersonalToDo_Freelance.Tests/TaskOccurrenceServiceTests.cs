@@ -199,6 +199,62 @@ namespace PersonalToDo_Freelance.Tests
         }
 
         [Fact]
+        public async Task StopRecurrence_SetsRuleEndDateAndDoesNotModifyExistingOccurrences()
+        {
+            var db = CreateDbContext("occ_stop_preserves_history");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Daily, new DateTime(2026, 8, 1));
+            var occurrenceService = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            var taskService = new TaskService(db, new FakeCurrentUser { UserId = "u1" });
+            await occurrenceService.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 5));
+            var completed = db.TaskOccurrences.Single(o => o.OccurrenceDate.Date == new DateTime(2026, 8, 1));
+            var skipped = db.TaskOccurrences.Single(o => o.OccurrenceDate.Date == new DateTime(2026, 8, 2));
+            await occurrenceService.ChangeStatusAsync(completed.Id, OccurrenceStatus.Completed);
+            await occurrenceService.SkipAsync(skipped.Id);
+
+            var result = await taskService.StopRecurrenceAsync(task.Id, new DateTime(2026, 8, 3));
+
+            Assert.True(result.Succeeded);
+            var rule = db.RecurrenceRules.Find(task.RecurrenceRule!.Id)!;
+            Assert.Equal(new DateTime(2026, 8, 3), rule.EndDate);
+            Assert.False(rule.IsDeleted);
+            Assert.Equal(RecurrenceType.Daily, rule.Type);
+            Assert.Equal(OccurrenceStatus.Completed, db.TaskOccurrences.Find(completed.Id)!.Status);
+            Assert.NotNull(db.TaskOccurrences.Find(completed.Id)!.CompletedAt);
+            Assert.Equal(OccurrenceStatus.Skipped, db.TaskOccurrences.Find(skipped.Id)!.Status);
+            Assert.Equal(5, db.TaskOccurrences.Count());
+        }
+
+        [Fact]
+        public async Task StopRecurrence_PreventsGenerationAfterEndDate()
+        {
+            var db = CreateDbContext("occ_stop_generation");
+            var task = await AddRecurringTaskAsync(db, RecurrenceType.Daily, new DateTime(2026, 8, 1));
+            var occurrenceService = new TaskOccurrenceService(db, new FakeCurrentUser { UserId = "u1" });
+            var taskService = new TaskService(db, new FakeCurrentUser { UserId = "u1" });
+            await occurrenceService.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 2));
+
+            await taskService.StopRecurrenceAsync(task.Id, new DateTime(2026, 8, 2));
+            await occurrenceService.GenerateForTaskAsync(task.Id, new DateTime(2026, 8, 10));
+
+            AssertDates(db, new DateTime(2026, 8, 1), new DateTime(2026, 8, 2));
+        }
+
+        [Fact]
+        public async Task StopRecurrence_ReturnsErrorForNonRecurringTask()
+        {
+            var db = CreateDbContext("occ_stop_nonrecurring");
+            var task = new TodoTask { UserId = "u1", Title = "One off" };
+            db.Tasks.Add(task);
+            await db.SaveChangesAsync();
+            var taskService = new TaskService(db, new FakeCurrentUser { UserId = "u1" });
+
+            var result = await taskService.StopRecurrenceAsync(task.Id, new DateTime(2026, 8, 1));
+
+            Assert.False(result.Succeeded);
+            Assert.Equal("Task is not recurring.", result.Error);
+        }
+
+        [Fact]
         public async Task Skip_MarksOnlySelectedOccurrenceSkipped()
         {
             var db = CreateDbContext("occ_skip");
