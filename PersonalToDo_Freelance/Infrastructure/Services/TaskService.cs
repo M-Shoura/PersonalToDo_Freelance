@@ -154,7 +154,10 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
         {
             var userId = _user.UserId ?? string.Empty;
             query ??= new Application.ViewModels.TaskQueryParameters();
-            var q = _db.Tasks.AsNoTracking().Where(t => t.UserId == userId && !t.IsDeleted);
+            var q = _db.Tasks.AsNoTracking()
+                .Include(t => t.Category)
+                .Include(t => t.RecurrenceRule)
+                .Where(t => t.UserId == userId && !t.IsDeleted);
             if (query.Status.HasValue)
                 q = q.Where(t => t.Status == query.Status.Value);
             if (query.CategoryId.HasValue)
@@ -229,10 +232,12 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             {
                 Id = t.Id,
                 Title = t.Title,
+                CategoryName = t.Category != null ? t.Category.Name : null,
                 Priority = t.Priority,
                 DueDate = t.DueDate,
                 Status = t.Status,
-                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < now && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
+                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < now && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled,
+                IsRecurring = t.RecurrenceRule != null && !t.RecurrenceRule.IsDeleted && t.RecurrenceRule.Type != RecurrenceType.None
             }).ToListAsync();
             return list;
         }

@@ -138,6 +138,11 @@ namespace PersonalToDo_Freelance.Controllers
         public async Task<IActionResult> ChangeStatus(long id, PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus status)
         {
             var (succeeded, error) = await _taskService.ChangeStatusAsync(id, status);
+            if (Request.Headers["X-Requested-With"] == "fetch")
+            {
+                return Json(new { succeeded, error, status = status.ToString() });
+            }
+
             if (!succeeded) TempData["Error"] = error;
             return RedirectToAction("Index", "Dashboard");
         }
