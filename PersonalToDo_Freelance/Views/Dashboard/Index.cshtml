@@ -1,59 +1,149 @@
 @model IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.TaskListItemViewModel>
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "My Tasks";
+    var q = ViewData["Query"] as PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters ?? new PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters();
+    var cats = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel> ?? Array.Empty<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>();
 }
-<h2>Dashboard</h2>
+
+<h2>My Tasks</h2>
+
 <form method="get" class="row g-2 mb-3">
-    <div class="col-auto flex-grow-1">
-        <input type="search" name="SearchTerm" class="form-control" placeholder="Search tasks..." value="@(ViewContext.HttpContext.Request.Query["SearchTerm"].ToString())" />
+    <div class="col-12 col-md-5">
+        <input type="search" name="SearchTerm" class="form-control" placeholder="Search tasks..." value="@(q.SearchTerm ?? string.Empty)" />
     </div>
-    <div class="col-auto">
-        <button type="submit" class="btn btn-primary">Search</button>
+    <div class="col-6 col-md-2">
+        <select name="Status" class="form-select">
+            <option value="">Any status</option>
+            @foreach (var s in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus)).Cast<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>())
+            {
+                var sval = ((int)s).ToString();
+                if (q.Status == s)
+                {
+                    <option value="@sval" selected>@s</option>
+                }
+                else
+                {
+                    <option value="@sval">@s</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-2">
+        <select name="CategoryId" class="form-select">
+            <option value="">All categories</option>
+            @foreach (var c in cats)
+            {
+                if (q.CategoryId == c.Id)
+                {
+                    <option value="@c.Id" selected>@c.Name</option>
+                }
+                else
+                {
+                    <option value="@c.Id">@c.Name</option>
+                }
+            }
+        </select>
+    </div>
+    <div class="col-6 col-md-1">
+        <select name="SortBy" class="form-select">
+            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.DueDate) { <option value="0" selected>Due</option> } else { <option value="0">Due</option> }
+            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Priority) { <option value="1" selected>Priority</option> } else { <option value="1">Priority</option> }
+            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Title) { <option value="5" selected>Title</option> } else { <option value="5">Title</option> }
+        </select>
+    </div>
+    <div class="col-6 col-md-1">
+        <select name="SortDirection" class="form-select">
+            @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Asc) { <option value="0" selected>Asc</option> } else { <option value="0">Asc</option> }
+            @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Desc) { <option value="1" selected>Desc</option> } else { <option value="1">Desc</option> }
+        </select>
+    </div>
+    <div class="col-12 col-md-1">
+        <button type="submit" class="btn btn-primary w-100">Apply</button>
+    </div>
+    <div class="col-12">
+        <small class="text-muted">Use filters to refine results. Sorting and search are supported.</small>
     </div>
 </form>
-<table class="table">
-    <thead>
-        <tr>
-            <th>Title</th>
-            <th>Priority</th>
-            <th>Due</th>
-            <th>Status</th>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-@foreach (var t in Model)
-{
-    var rowClass = t.IsOverdue ? "table-danger" : "";
-    <tr class="@rowClass">
-        <td>@t.Title</td>
-        <td>
-            @switch (t.Priority)
-            {
-                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Low:
-                    <span class="badge bg-secondary">Low</span>
-                    break;
-                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium:
-                    <span class="badge bg-primary">Medium</span>
-                    break;
-                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.High:
-                    <span class="badge bg-warning text-dark">High</span>
-                    break;
-                case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical:
-                    <span class="badge bg-danger">Critical</span>
-                    break;
-            }
-        </td>
-        <td>@(t.DueDate?.ToString("yyyy-MM-dd") ?? "-")</td>
-        <td>@t.Status</td>
-        <td>
-            <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary">View</a>
-            <form asp-controller="Task" asp-action="ChangeStatus" method="post" style="display:inline;" asp-route-id="@t.Id">
-                <input type="hidden" name="status" value="@( (int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed )" />
-                <button type="submit" class="btn btn-sm btn-success" title="Mark completed">✓</button>
-            </form>
-        </td>
-    </tr>
-}
-    </tbody>
-</table>
+
+<div class="table-responsive d-none d-md-block">
+    <table class="table align-middle">
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Category</th>
+                <th>Priority</th>
+                <th>Due</th>
+                <th>Status</th>
+                <th>Recurring</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach (var t in Model)
+        {
+            var rowClass = t.IsOverdue ? "table-danger" : "";
+            <tr class="@rowClass" data-task-id="@t.Id">
+                <td>@t.Title</td>
+                <td>@(t.CategoryName ?? "-")</td>
+                <td>
+                    @switch (t.Priority)
+                    {
+                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Low:
+                            <span class="badge bg-secondary">Low</span>
+                            break;
+                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium:
+                            <span class="badge bg-primary">Medium</span>
+                            break;
+                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.High:
+                            <span class="badge bg-warning text-dark">High</span>
+                            break;
+                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical:
+                            <span class="badge bg-danger">Critical</span>
+                            break;
+                    }
+                </td>
+                <td>@(t.DueDate?.ToString("yyyy-MM-dd") ?? "-")</td>
+                <td class="task-status">@t.Status</td>
+                <td>@(t.IsRecurring ? "🔁" : "")</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-success me-1" data-action="complete" data-task-id="@t.Id">✓</button>
+                    <button class="btn btn-sm btn-outline-primary me-1" data-action="reopen" data-task-id="@t.Id">↺</button>
+                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary me-1">Reschedule</a>
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary me-1">Edit</a>
+                    <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete this task?');">
+                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+</div>
+
+@* Mobile card view *@
+<div class="d-block d-md-none">
+    @foreach (var t in Model)
+    {
+        <div class="card mb-2 @((t.IsOverdue) ? "border-danger" : "")" data-task-id="@t.Id">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <h5 class="card-title mb-0">@t.Title</h5>
+                    <small class="text-muted">@t.DueDate?.ToString("yyyy-MM-dd")</small>
+                </div>
+                <p class="card-text mb-1">@(t.CategoryName ?? "-") • @t.Priority</p>
+                <p class="mb-2"><strong>Status:</strong> <span class="task-status">@t.Status</span> @if (t.IsRecurring){<span class="ms-2">🔁</span>}</p>
+                <div>
+                    <button class="btn btn-sm btn-success me-1" data-action="complete" data-task-id="@t.Id">✓</button>
+                    <button class="btn btn-sm btn-outline-primary me-1" data-action="reopen" data-task-id="@t.Id">↺</button>
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary me-1">Edit</a>
+                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary me-1">Reschedule</a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@* Hidden antiforgery token for AJAX *@
+<form id="__antiForgeryForm">@Html.AntiForgeryToken()</form>
+
+<script src="/js/mytasks.js"></script>
