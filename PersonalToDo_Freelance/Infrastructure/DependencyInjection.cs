@@ -14,8 +14,8 @@ namespace PersonalToDo_Freelance.Infrastructure
             services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             services.AddScoped<ICategoryService, CategoryService>();
-            services.AddScoped<PersonalToDo_Freelance.Application.Interfaces.ITaskService, PersonalToDo_Freelance.Infrastructure.Services.TaskService>();
-            services.AddScoped<PersonalToDo_Freelance.Application.Interfaces.ITaskService, PersonalToDo_Freelance.Infrastructure.Services.TaskService>();
+            services.AddScoped<ITaskService, TaskService>();
+            services.AddScoped<ITaskOccurrenceService, TaskOccurrenceService>();
 
             return services;
         }

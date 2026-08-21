@@ -59,6 +59,8 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             var userId = _user.UserId ?? string.Empty;
             var t = await _db.Tasks.AsNoTracking()
                 .Include(x => x.Category)
+                .Include(x => x.RecurrenceRule)
+                .Include(x => x.Occurrences)
                 .Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted)
                 .FirstOrDefaultAsync();
             if (t == null) return null;
@@ -76,7 +78,22 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 CreatedAt = t.CreatedAt,
                 UpdatedAt = t.UpdatedAt,
                 CompletedAt = t.CompletedAt,
-                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled
+                IsOverdue = t.DueDate.HasValue && t.DueDate.Value.Date < DateTime.UtcNow.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled,
+                IsRecurring = t.RecurrenceRule != null && !t.RecurrenceRule.IsDeleted && t.RecurrenceRule.Type != RecurrenceType.None,
+                Occurrences = t.Occurrences
+                    .Where(o => !o.IsDeleted)
+                    .OrderBy(o => o.OccurrenceDate)
+                    .Select(o => new TaskOccurrenceViewModel
+                    {
+                        Id = o.Id,
+                        TodoTaskId = o.TodoTaskId,
+                        RecurrenceRuleId = o.RecurrenceRuleId,
+                        TaskTitle = t.Title,
+                        ScheduledDate = o.OccurrenceDate,
+                        Status = o.Status,
+                        CompletedAt = o.CompletedAt
+                    })
+                    .ToList()
             };
         }
 

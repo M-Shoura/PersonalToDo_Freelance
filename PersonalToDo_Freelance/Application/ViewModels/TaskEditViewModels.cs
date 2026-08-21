@@ -20,6 +20,8 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public DateTime? UpdatedAt { get; set; }
         public DateTime? CompletedAt { get; set; }
         public bool IsOverdue { get; set; }
+        public bool IsRecurring { get; set; }
+        public IReadOnlyList<TaskOccurrenceViewModel> Occurrences { get; set; } = Array.Empty<TaskOccurrenceViewModel>();
     }
 
     public class TaskEditViewModel : IValidatableObject

@@ -11,11 +11,13 @@ namespace PersonalToDo_Freelance.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly ICategoryService _categoryService;
+        private readonly ITaskOccurrenceService _occurrenceService;
 
-        public TaskController(ITaskService taskService, ICategoryService categoryService)
+        public TaskController(ITaskService taskService, ICategoryService categoryService, ITaskOccurrenceService occurrenceService)
         {
             _taskService = taskService;
             _categoryService = categoryService;
+            _occurrenceService = occurrenceService;
         }
 
         [HttpGet]
@@ -138,6 +140,41 @@ namespace PersonalToDo_Freelance.Controllers
             var (succeeded, error) = await _taskService.ChangeStatusAsync(id, status);
             if (!succeeded) TempData["Error"] = error;
             return RedirectToAction("Index", "Dashboard");
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> GenerateOccurrences(long id, DateTime? through)
+        {
+            await _occurrenceService.GenerateForTaskAsync(id, through ?? DateTime.UtcNow.Date.AddDays(60));
+            return RedirectToAction("Details", new { id });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeOccurrenceStatus(long occurrenceId, PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus status, long taskId)
+        {
+            var (succeeded, error) = await _occurrenceService.ChangeStatusAsync(occurrenceId, status);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id = taskId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SkipOccurrence(long occurrenceId, long taskId)
+        {
+            var (succeeded, error) = await _occurrenceService.SkipAsync(occurrenceId);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id = taskId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RescheduleOccurrence(long occurrenceId, long taskId, DateTime scheduledDate)
+        {
+            var (succeeded, error) = await _occurrenceService.RescheduleAsync(occurrenceId, scheduledDate);
+            if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id = taskId });
         }
     }
 }
