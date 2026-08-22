@@ -60,7 +60,8 @@
     }
     else
     {
-        <table class="table">
+        <div class="table-responsive">
+            <table class="table">
             <thead>
                 <tr>
                     <th>Scheduled Date</th>
@@ -88,34 +89,35 @@
                             </form>
                         </td>
                         <td>
-                            <a asp-action="OccurrenceDetails" asp-route-occurrenceId="@occurrence.Id" class="btn btn-sm btn-outline-secondary">View</a>
+                            <a asp-action="OccurrenceDetails" asp-route-occurrenceId="@occurrence.Id" class="btn btn-sm btn-outline-secondary task-action">View</a>
                             <form asp-action="ChangeOccurrenceStatus" method="post" style="display:inline;">
                                 <input type="hidden" name="occurrenceId" value="@occurrence.Id" />
                                 <input type="hidden" name="taskId" value="@Model.Id" />
                                 <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Completed)" />
-                                <button type="submit" class="btn btn-sm btn-success">Complete</button>
+                                <button type="submit" class="btn btn-sm btn-success task-action">Complete</button>
                             </form>
                             <form asp-action="ReopenOccurrence" method="post" style="display:inline;">
                                 <input type="hidden" name="occurrenceId" value="@occurrence.Id" />
                                 <input type="hidden" name="taskId" value="@Model.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Reopen</button>
+                                <button type="submit" class="btn btn-sm btn-outline-primary task-action">Reopen</button>
                             </form>
                             <form asp-action="SkipOccurrence" method="post" style="display:inline;">
                                 <input type="hidden" name="occurrenceId" value="@occurrence.Id" />
                                 <input type="hidden" name="taskId" value="@Model.Id" />
-                                <button type="submit" class="btn btn-sm btn-outline-warning">Skip</button>
+                                <button type="submit" class="btn btn-sm btn-outline-warning task-action">Skip</button>
                             </form>
                             <form asp-action="ChangeOccurrenceStatus" method="post" style="display:inline;">
                                 <input type="hidden" name="occurrenceId" value="@occurrence.Id" />
                                 <input type="hidden" name="taskId" value="@Model.Id" />
                                 <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Cancelled)" />
-                                <button type="submit" class="btn btn-sm btn-outline-danger">Cancel</button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger task-action">Cancel</button>
                             </form>
                         </td>
                     </tr>
                 }
             </tbody>
-        </table>
+            </table>
+        </div>
     }
 }
 

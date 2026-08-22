@@ -149,12 +149,12 @@
                 <td class="task-status">@t.Status</td>
                 <td>@(t.IsRecurring ? "🔁" : "")</td>
                 <td class="text-end">
-                    <button class="btn btn-sm btn-success me-1" data-action="complete" data-task-id="@t.Id">✓</button>
-                    <button class="btn btn-sm btn-outline-primary me-1" data-action="reopen" data-task-id="@t.Id">↺</button>
-                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary me-1">Reschedule</a>
-                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary me-1">Edit</a>
+                    <button class="btn btn-sm btn-success task-action me-1" data-action="complete" data-task-id="@t.Id" aria-label="Complete task">✓</button>
+                    <button class="btn btn-sm btn-outline-primary task-action me-1" data-action="reopen" data-task-id="@t.Id" aria-label="Reopen task">↺</button>
+                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary task-action me-1">Reschedule</a>
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary task-action me-1">Edit</a>
                     <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete this task?');">
-                        <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        <button type="submit" class="btn btn-sm btn-danger task-action">Delete</button>
                     </form>
                 </td>
             </tr>
@@ -176,10 +176,10 @@
                 <p class="card-text mb-1">@(t.CategoryName ?? "-") • @t.Priority</p>
                 <p class="mb-2"><strong>Status:</strong> <span class="task-status">@t.Status</span> @if (t.IsRecurring){<span class="ms-2">🔁</span>}</p>
                 <div>
-                    <button class="btn btn-sm btn-success me-1" data-action="complete" data-task-id="@t.Id">✓</button>
-                    <button class="btn btn-sm btn-outline-primary me-1" data-action="reopen" data-task-id="@t.Id">↺</button>
-                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary me-1">Edit</a>
-                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary me-1">Reschedule</a>
+                    <button class="btn btn-sm btn-success task-action me-1" data-action="complete" data-task-id="@t.Id" aria-label="Complete task">✓</button>
+                    <button class="btn btn-sm btn-outline-primary task-action me-1" data-action="reopen" data-task-id="@t.Id" aria-label="Reopen task">↺</button>
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary task-action me-1">Edit</a>
+                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary task-action me-1">Reschedule</a>
                 </div>
             </div>
         </div>

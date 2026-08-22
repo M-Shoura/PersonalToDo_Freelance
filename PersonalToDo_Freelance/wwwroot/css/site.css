@@ -36,3 +36,20 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* Responsive tweaks for touch and small screens */
+@media (max-width: 576px) {
+  .navbar-brand { font-size: 1.05rem; }
+  .btn { padding: 0.6rem 0.9rem; font-size: 1rem; }
+  .btn-sm { padding: 0.45rem 0.7rem; font-size: 0.95rem; }
+  .form-control { font-size: 1rem; }
+  .form-label { font-size: 0.95rem; }
+  /* allow tables to be scrolled horizontally on small screens */
+  .table { font-size: 0.95rem; }
+}
+
+/* Improve table cell wrapping and truncated content when needed */
+td, th { word-break: break-word; }
+
+/* Ensure large clickable areas for action buttons in lists */
+.task-action { min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }

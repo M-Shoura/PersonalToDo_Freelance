@@ -6,7 +6,8 @@
 <p>
     <a class="btn btn-primary" asp-action="Create">Create New</a>
 </p>
-<table class="table">
+<div class="table-responsive">
+    <table class="table">
     <thead>
         <tr>
             <th>Name</th>
@@ -21,12 +22,13 @@
         <td>@item.Name</td>
         <td>@item.Description</td>
         <td>
-            <a class="btn btn-sm btn-secondary" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+            <a class="btn btn-sm btn-secondary task-action" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
             <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;">
-                <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?');">Delete</button>
+                <button type="submit" class="btn btn-sm btn-danger task-action" onclick="return confirm('Are you sure?');">Delete</button>
             </form>
         </td>
     </tr>
 }
     </tbody>
-</table>
+    </table>
+</div>
