@@ -1,58 +1,15 @@
-@model PersonalToDo_Freelance.Application.ViewModels.DashboardViewModel
+@model IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.TaskListItemViewModel>
 @{
-    ViewData["Title"] = "My Tasks";
+    ViewData["Title"] = "All Tasks";
     var q = ViewData["Query"] as PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters ?? new PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters();
     var cats = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel> ?? Array.Empty<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>();
 }
 
-<h2>My Tasks</h2>
+<h2>All Tasks</h2>
 <ul class="nav nav-tabs mb-3">
-    <li class="nav-item"><a class="nav-link active" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-    <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="All">All Tasks</a></li>
+    <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
+    <li class="nav-item"><a class="nav-link active" asp-controller="Dashboard" asp-action="All">All Tasks</a></li>
 </ul>
-
-<div class="row mb-3">
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Today's Tasks</h5>
-                <p class="card-text fs-4">@Model.TotalToday</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Completed Today</h5>
-                <p class="card-text fs-4">@Model.CompletedToday</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Pending Today</h5>
-                <p class="card-text fs-4">@Model.PendingToday</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Overdue</h5>
-                <p class="card-text fs-4 text-danger">@Model.Overdue</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-12 col-md-4 mt-2 mt-md-0">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Today's Completion Rate</h5>
-                <p class="card-text fs-4">@((Model.CompletionRate * 100).ToString("F0"))% </p>
-            </div>
-        </div>
-    </div>
-</div>
 
 <form method="get" class="row g-2 mb-3">
     <div class="col-12 col-md-5">
@@ -112,7 +69,7 @@
     </div>
 </form>
 
-@if (!Model.TodayTasks.Any())
+@if (!Model.Any())
 {
     <div class="alert alert-info text-center" role="alert">
         @if (!string.IsNullOrWhiteSpace(q.SearchTerm))
@@ -121,7 +78,7 @@
         }
         else
         {
-            <div>You're all clear for today! <a asp-controller="Task" asp-action="Create">Create a task</a></div>
+            <div>No tasks found. <a asp-controller="Task" asp-action="Create">Create a task</a></div>
         }
     </div>
 }
@@ -141,7 +98,7 @@ else
             </tr>
         </thead>
         <tbody>
-        @foreach (var t in Model.TodayTasks)
+        @foreach (var t in Model)
         {
             var rowClass = t.IsOverdue ? "table-danger" : "";
             <tr class="@rowClass" data-task-id="@t.Id">
@@ -184,7 +141,7 @@ else
 
     @* Mobile card view *@
     <div class="d-block d-md-none">
-    @foreach (var t in Model.TodayTasks)
+    @foreach (var t in Model)
     {
         <div class="card mb-2 @((t.IsOverdue) ? "border-danger" : "")" data-task-id="@t.Id">
             <div class="card-body">
