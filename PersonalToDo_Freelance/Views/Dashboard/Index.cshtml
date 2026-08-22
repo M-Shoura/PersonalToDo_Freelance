@@ -108,7 +108,22 @@
     </div>
 </form>
 
-<div class="table-responsive d-none d-md-block">
+@if (!Model.TodayTasks.Any())
+{
+    <div class="alert alert-info text-center" role="alert">
+        @if (!string.IsNullOrWhiteSpace(q.SearchTerm))
+        {
+            <div>No tasks match your search.</div>
+        }
+        else
+        {
+            <div>You're all clear for today! <a asp-controller="Task" asp-action="Create">Create a task</a></div>
+        }
+    </div>
+}
+else
+{
+    <div class="table-responsive d-none d-md-block">
     <table class="table align-middle">
         <thead>
             <tr>
@@ -153,18 +168,18 @@
                     <button class="btn btn-sm btn-outline-primary task-action me-1" data-action="reopen" data-task-id="@t.Id" aria-label="Reopen task">↺</button>
                     <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary task-action me-1">Reschedule</a>
                     <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary task-action me-1">Edit</a>
-                    <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" style="display:inline;" onsubmit="return confirm('Delete this task?');">
-                        <button type="submit" class="btn btn-sm btn-danger task-action">Delete</button>
-                    </form>
+                        <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" style="display:inline;" data-confirm="Delete this task?">
+                            <button type="submit" class="btn btn-sm btn-danger task-action">Delete</button>
+                        </form>
                 </td>
             </tr>
         }
         </tbody>
     </table>
-</div>
+    </div>
 
-@* Mobile card view *@
-<div class="d-block d-md-none">
+    @* Mobile card view *@
+    <div class="d-block d-md-none">
     @foreach (var t in Model.TodayTasks)
     {
         <div class="card mb-2 @((t.IsOverdue) ? "border-danger" : "")" data-task-id="@t.Id">
@@ -184,7 +199,8 @@
             </div>
         </div>
     }
-</div>
+    </div>
+}
 
 @* Hidden antiforgery token for AJAX *@
 <form id="__antiForgeryForm">@Html.AntiForgeryToken()</form>

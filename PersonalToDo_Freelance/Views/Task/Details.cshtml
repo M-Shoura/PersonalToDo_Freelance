@@ -50,8 +50,8 @@
             <button type="submit" class="btn btn-outline-primary">Generate</button>
         </div>
     </form>
-    <form asp-action="StopRecurrence" asp-route-id="@Model.Id" method="post" class="mb-3">
-        <button type="submit" class="btn btn-outline-danger" onclick="return confirm('Stop future recurrence for this task?');">Stop Recurrence</button>
+    <form asp-action="StopRecurrence" asp-route-id="@Model.Id" method="post" class="mb-3" data-confirm="Stop future recurrence for this task?">
+        <button type="submit" class="btn btn-outline-danger">Stop Recurrence</button>
     </form>
 
     @if (Model.Occurrences.Count == 0)
@@ -123,8 +123,8 @@
 
 <p>
     <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
-    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display:inline;">
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Delete this task?');">Delete</button>
+    <form asp-action="Delete" asp-route-id="@Model.Id" method="post" style="display:inline;" data-confirm="Delete this task?">
+        <button type="submit" class="btn btn-danger">Delete</button>
     </form>
     <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Back</a>
 </p>

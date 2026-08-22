@@ -25,6 +25,7 @@
             const json = await res.json();
             return json;
         } catch (e) {
+            window.showToast(e.message || 'Network error', 'danger');
             return { succeeded: false, error: e.message };
         }
     }
@@ -53,12 +54,12 @@
         if (action === 'complete') {
             postChangeStatus(taskId, '2').then(r => {
                 if (r.succeeded) updateRowStatus(taskId, r.status || 'Completed');
-                else alert(r.error || 'Failed to complete task');
+                else window.showToast(r.error || 'Failed to complete task', 'danger');
             });
         } else if (action === 'reopen') {
             postChangeStatus(taskId, '0').then(r => {
                 if (r.succeeded) updateRowStatus(taskId, r.status || 'NotStarted');
-                else alert(r.error || 'Failed to reopen task');
+                else window.showToast(r.error || 'Failed to reopen task', 'danger');
             });
         }
     }

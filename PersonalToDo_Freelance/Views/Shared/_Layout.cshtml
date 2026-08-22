@@ -51,6 +51,25 @@
         </nav>
     </header>
     <div class="container">
+        @* Alert area for TempData messages *@
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                @TempData["Success"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                @TempData["Error"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @* Toast container for client-side messages *@
+        <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index:1080;">
+            <div id="toastContainer"></div>
+        </div>
         <main role="main" class="pb-3">
             @RenderBody()
         </main>
@@ -64,6 +83,27 @@
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="~/js/confirm.js" asp-append-version="true"></script>
+    @* Include confirm modal partial *@
+    @await Html.PartialAsync("_ConfirmModal")
+    <script>
+        // simple helper to show a toast from JS
+        window.showToast = function(message, type) {
+            const container = document.getElementById('toastContainer');
+            if(!container) return;
+            const toastEl = document.createElement('div');
+            toastEl.className = 'toast align-items-center text-bg-' + (type || 'primary') + ' border-0';
+            toastEl.setAttribute('role','alert');
+            toastEl.setAttribute('aria-live','assertive');
+            toastEl.setAttribute('aria-atomic','true');
+            toastEl.style.minWidth = '200px';
+            toastEl.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            container.appendChild(toastEl);
+            const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
+            bsToast.show();
+            toastEl.addEventListener('hidden.bs.toast', ()=> toastEl.remove());
+        }
+    </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
