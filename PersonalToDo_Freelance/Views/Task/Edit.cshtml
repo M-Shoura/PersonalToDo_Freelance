@@ -3,55 +3,111 @@
     ViewData["Title"] = "Edit Task";
     var categories = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>;
 }
-<h2>Edit Task</h2>
-<form asp-action="Edit" method="post">
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <input type="hidden" asp-for="Id" />
-    <div class="mb-3">
-        <label asp-for="Title" class="form-label"></label>
-        <input asp-for="Title" class="form-control" />
-        <span asp-validation-for="Title" class="text-danger"></span>
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8 col-xl-7">
+        <!-- Breadcrumb / Back Link -->
+        <div class="mb-3">
+            <a asp-controller="Dashboard" asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 hover-dark">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+
+        <div class="tp-card p-4 p-md-5">
+            <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+                <div class="stat-icon stat-icon-primary rounded-circle" style="width: 48px; height: 48px; font-size: 1.25rem;">
+                    <i class="bi bi-pencil-fill"></i>
+                </div>
+                <div>
+                    <h3 class="fw-bold text-dark mb-0">Edit Task</h3>
+                    <p class="text-muted small mb-0">Update your task details and schedule</p>
+                </div>
+            </div>
+
+            <form asp-action="Edit" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger rounded-3 py-2 small" role="alert"></div>
+                <input type="hidden" asp-for="Id" />
+
+                <!-- Title -->
+                <div class="mb-3">
+                    <label asp-for="Title" class="form-label small fw-semibold text-muted">Task Title <span class="text-danger">*</span></label>
+                    <input asp-for="Title" class="form-control form-control-lg fs-6" placeholder="Task title" autofocus />
+                    <span asp-validation-for="Title" class="text-danger small"></span>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label small fw-semibold text-muted">Description</label>
+                    <textarea asp-for="Description" class="form-control" rows="3" placeholder="Task description..."></textarea>
+                    <span asp-validation-for="Description" class="text-danger small"></span>
+                </div>
+
+                <!-- Category & Priority Row -->
+                <div class="row g-3 mb-3">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="CategoryId" class="form-label small fw-semibold text-muted">Category</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-tag"></i></span>
+                            <select asp-for="CategoryId" class="form-select">
+                                <option value="">Select category (optional)</option>
+                                @if (categories != null)
+                                {
+                                    foreach (var c in categories)
+                                    {
+                                        <option value="@c.Id" selected="@(Model.CategoryId == c.Id ? "selected" : null)">@c.Name</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <span asp-validation-for="CategoryId" class="text-danger small"></span>
+                    </div>
+
+                    <div class="col-12 col-md-6">
+                        <label asp-for="Priority" class="form-label small fw-semibold text-muted">Priority</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-flag"></i></span>
+                            <select asp-for="Priority" class="form-select">
+                                @foreach (var p in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TaskPriority)))
+                                {
+                                    <option value="@((int)p)" selected="@(Model.Priority == (PersonalToDo_Freelance.Domain.Enums.TaskPriority)p ? "selected" : null)">@p</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dates Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-12 col-md-6">
+                        <label asp-for="StartDate" class="form-label small fw-semibold text-muted">Start Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-calendar-play"></i></span>
+                            <input asp-for="StartDate" class="form-control" type="date" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label asp-for="DueDate" class="form-label small fw-semibold text-muted">Due Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i class="bi bi-calendar-check"></i></span>
+                            <input asp-for="DueDate" class="form-control" type="date" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recurrence Fields Partial -->
+                <partial name="_RecurrenceFields" for="Recurrence" />
+
+                <!-- Action Buttons -->
+                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium text-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm d-inline-flex align-items-center">
+                        <i class="bi bi-check2 me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="mb-3">
-        <label asp-for="Description" class="form-label"></label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="CategoryId" class="form-label">Category</label>
-        <select asp-for="CategoryId" class="form-select">
-            <option value=""></option>
-            @if (categories != null)
-            {
-                foreach (var c in categories)
-                {
-                    <option value="@c.Id" selected="@(Model.CategoryId==c.Id ? "selected" : null)">@c.Name</option>
-                }
-            }
-        </select>
-        <span asp-validation-for="CategoryId" class="text-danger"></span>
-    </div>
-    <div class="mb-3">
-        <label asp-for="Priority" class="form-label">Priority</label>
-        <select asp-for="Priority" class="form-select">
-            @foreach (var p in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TaskPriority)))
-            {
-                <option value="@((int)p)" selected="@(Model.Priority==(PersonalToDo_Freelance.Domain.Enums.TaskPriority)p ? "selected" : null)">@p</option>
-            }
-        </select>
-    </div>
-    <div class="mb-3">
-        <label asp-for="StartDate" class="form-label"></label>
-        <input asp-for="StartDate" class="form-control" type="date" />
-    </div>
-    <div class="mb-3">
-        <label asp-for="DueDate" class="form-label"></label>
-        <input asp-for="DueDate" class="form-control" type="date" />
-    </div>
-    <partial name="_RecurrenceFields" for="Recurrence" />
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />

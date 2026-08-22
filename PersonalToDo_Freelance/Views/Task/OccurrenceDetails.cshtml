@@ -1,69 +1,118 @@
 @model PersonalToDo_Freelance.Application.ViewModels.TaskOccurrenceViewModel
 @{
     ViewData["Title"] = "Occurrence Details";
+    var occStatusClass = Model.Status == PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Completed ? "badge-status-completed" :
+                         Model.Status == PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Skipped ? "badge-status-notstarted" :
+                         Model.Status == PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Cancelled ? "badge-status-cancelled" : "badge-status-inprogress";
 }
 
-<h2>Occurrence Details</h2>
-
-<dl class="row">
-    <dt class="col-sm-3">Task</dt>
-    <dd class="col-sm-9">@Model.TaskTitle</dd>
-
-    <dt class="col-sm-3">Scheduled Date</dt>
-    <dd class="col-sm-9">@Model.ScheduledDate.ToString("yyyy-MM-dd")</dd>
-
-    <dt class="col-sm-3">Original Recurrence Date</dt>
-    <dd class="col-sm-9">@Model.OriginalScheduledDate.ToString("yyyy-MM-dd")</dd>
-
-    <dt class="col-sm-3">Status</dt>
-    <dd class="col-sm-9">@Model.Status</dd>
-
-    <dt class="col-sm-3">Completed At</dt>
-    <dd class="col-sm-9">@Model.CompletedAt?.ToString("yyyy-MM-dd HH:mm")</dd>
-
-    <dt class="col-sm-3">Created</dt>
-    <dd class="col-sm-9">@Model.CreatedAt</dd>
-
-    <dt class="col-sm-3">Updated</dt>
-    <dd class="col-sm-9">@Model.UpdatedAt</dd>
-</dl>
-
+<!-- Breadcrumb -->
 <div class="mb-3">
-    <form asp-action="RescheduleOccurrence" method="post" class="row g-2 align-items-end">
-        <input type="hidden" name="occurrenceId" value="@Model.Id" />
-        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
-        <div class="col-auto">
-            <label for="scheduledDate" class="form-label">Scheduled date</label>
-            <input id="scheduledDate" name="scheduledDate" type="date" class="form-control" value="@Model.ScheduledDate.ToString("yyyy-MM-dd")" />
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Reschedule</button>
-        </div>
-    </form>
+    <a asp-action="Details" asp-route-id="@Model.TodoTaskId" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 hover-dark">
+        <i class="bi bi-arrow-left"></i> Back to Task Details
+    </a>
 </div>
 
-<p>
-    <form asp-action="ChangeOccurrenceStatus" method="post" style="display:inline;">
-        <input type="hidden" name="occurrenceId" value="@Model.Id" />
-        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
-        <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Completed)" />
-        <button type="submit" class="btn btn-success">Complete</button>
-    </form>
-    <form asp-action="ReopenOccurrence" method="post" style="display:inline;">
-        <input type="hidden" name="occurrenceId" value="@Model.Id" />
-        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
-        <button type="submit" class="btn btn-outline-primary">Reopen</button>
-    </form>
-    <form asp-action="SkipOccurrence" method="post" style="display:inline;">
-        <input type="hidden" name="occurrenceId" value="@Model.Id" />
-        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
-        <button type="submit" class="btn btn-outline-warning">Skip</button>
-    </form>
-    <form asp-action="ChangeOccurrenceStatus" method="post" style="display:inline;">
-        <input type="hidden" name="occurrenceId" value="@Model.Id" />
-        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
-        <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Cancelled)" />
-        <button type="submit" class="btn btn-outline-danger">Cancel</button>
-    </form>
-    <a asp-action="Details" asp-route-id="@Model.TodoTaskId" class="btn btn-secondary">Back</a>
-</p>
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <div class="tp-card p-4 p-md-5 mb-4">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-3 border-bottom">
+                <div>
+                    <span class="badge-status @occStatusClass fs-6 py-1 px-3 mb-2">@Model.Status</span>
+                    <h3 class="fw-bold text-dark mb-0">Occurrence: @Model.TaskTitle</h3>
+                    <small class="text-muted">Scheduled recurrence instance</small>
+                </div>
+            </div>
+
+            <!-- Details list -->
+            <div class="row g-3 mb-4">
+                <div class="col-12 col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <span class="text-muted small d-block">Scheduled Date</span>
+                        <span class="fw-bold text-dark fs-6"><i class="bi bi-calendar-check text-primary me-1"></i> @Model.ScheduledDate.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <span class="text-muted small d-block">Original Recurrence Date</span>
+                        <span class="fw-semibold text-secondary fs-6"><i class="bi bi-calendar-range text-muted me-1"></i> @Model.OriginalScheduledDate.ToString("MMMM dd, yyyy")</span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <span class="text-muted small d-block">Created At</span>
+                        <span class="fw-semibold text-secondary fs-6">@Model.CreatedAt.ToString("g")</span>
+                    </div>
+                </div>
+                <div class="col-12 col-md-6">
+                    <div class="p-3 bg-light rounded-3">
+                        <span class="text-muted small d-block">Last Updated</span>
+                        <span class="fw-semibold text-secondary fs-6">@(Model.UpdatedAt?.ToString("g") ?? "Never")</span>
+                    </div>
+                </div>
+                @if (Model.CompletedAt.HasValue)
+                {
+                    <div class="col-12">
+                        <div class="p-3 bg-success bg-opacity-10 border border-success border-opacity-25 rounded-3">
+                            <span class="text-success small fw-semibold d-block">Completed Date</span>
+                            <span class="fw-bold text-success fs-6"><i class="bi bi-check-circle-fill me-1"></i> @Model.CompletedAt.Value.ToString("g")</span>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Reschedule Inline Form -->
+            <div class="p-3 bg-light rounded-3 mb-4 border">
+                <h6 class="fw-bold text-dark mb-2"><i class="bi bi-calendar-event me-1 text-primary"></i> Change Scheduled Date</h6>
+                <form asp-action="RescheduleOccurrence" method="post" class="row g-2 align-items-end">
+                    <input type="hidden" name="occurrenceId" value="@Model.Id" />
+                    <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
+                    <div class="col-12 col-md-8">
+                        <input id="scheduledDate" name="scheduledDate" type="date" class="form-control" value="@Model.ScheduledDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-12 col-md-4">
+                        <button type="submit" class="btn btn-primary w-100 fw-medium">Save Date</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Status Action Bar -->
+            <div class="d-flex flex-wrap gap-2 justify-content-between align-items-center pt-3 border-top">
+                <div class="d-flex flex-wrap gap-2">
+                    <form asp-action="ChangeOccurrenceStatus" method="post" class="d-inline">
+                        <input type="hidden" name="occurrenceId" value="@Model.Id" />
+                        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
+                        <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Completed)" />
+                        <button type="submit" class="btn btn-soft-success rounded-pill px-3 py-2 fw-medium">
+                            <i class="bi bi-check-lg me-1"></i> Complete
+                        </button>
+                    </form>
+                    <form asp-action="ReopenOccurrence" method="post" class="d-inline">
+                        <input type="hidden" name="occurrenceId" value="@Model.Id" />
+                        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
+                        <button type="submit" class="btn btn-soft-primary rounded-pill px-3 py-2 fw-medium">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Reopen
+                        </button>
+                    </form>
+                    <form asp-action="SkipOccurrence" method="post" class="d-inline">
+                        <input type="hidden" name="occurrenceId" value="@Model.Id" />
+                        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
+                        <button type="submit" class="btn btn-soft-warning rounded-pill px-3 py-2 fw-medium">
+                            <i class="bi bi-skip-forward me-1"></i> Skip
+                        </button>
+                    </form>
+                    <form asp-action="ChangeOccurrenceStatus" method="post" class="d-inline">
+                        <input type="hidden" name="occurrenceId" value="@Model.Id" />
+                        <input type="hidden" name="taskId" value="@Model.TodoTaskId" />
+                        <input type="hidden" name="status" value="@((int)PersonalToDo_Freelance.Domain.Enums.OccurrenceStatus.Cancelled)" />
+                        <button type="submit" class="btn btn-soft-danger rounded-pill px-3 py-2 fw-medium">
+                            <i class="bi bi-x-lg me-1"></i> Cancel
+                        </button>
+                    </form>
+                </div>
+                <a asp-action="Details" asp-route-id="@Model.TodoTaskId" class="btn btn-light rounded-pill px-4 fw-medium text-secondary">Back</a>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -1,212 +1,377 @@
 @model PersonalToDo_Freelance.Application.ViewModels.DashboardViewModel
 @{
-    ViewData["Title"] = "My Tasks";
+    ViewData["Title"] = "Dashboard";
     var q = ViewData["Query"] as PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters ?? new PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters();
     var cats = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel> ?? Array.Empty<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>();
+    var completionPercent = (int)Math.Round(Model.CompletionRate * 100);
 }
 
-<h2>My Tasks</h2>
-<ul class="nav nav-tabs mb-3">
-    <li class="nav-item"><a class="nav-link active" asp-controller="Dashboard" asp-action="Index">Dashboard</a></li>
-    <li class="nav-item"><a class="nav-link" asp-controller="Dashboard" asp-action="All">All Tasks</a></li>
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold text-dark mb-1">Today's Overview</h2>
+        <p class="text-muted mb-0 small">
+            <i class="bi bi-calendar-check me-1 text-primary"></i> @DateTime.UtcNow.ToString("dddd, MMMM d, yyyy")
+        </p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+        @if (Model.Overdue > 0)
+        {
+            <a asp-controller="Task" asp-action="BulkReschedule" class="btn btn-outline-danger btn-sm rounded-pill px-3 py-2 fw-medium d-inline-flex align-items-center">
+                <i class="bi bi-clock-history me-1"></i> Reschedule Overdue (@Model.Overdue)
+            </a>
+        }
+        <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm d-inline-flex align-items-center">
+            <i class="bi bi-plus-lg me-1"></i> Add Task
+        </a>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav tp-nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link active" asp-controller="Dashboard" asp-action="Index">
+            <i class="bi bi-calendar2-day-fill"></i> Today's Tasks
+            <span class="badge bg-primary rounded-pill ms-1">@Model.TotalToday</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Dashboard" asp-action="All">
+            <i class="bi bi-collection-fill"></i> All Tasks
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Dashboard" asp-action="Statistics">
+            <i class="bi bi-bar-chart-fill"></i> Productivity Stats
+        </a>
+    </li>
 </ul>
 
-<div class="row mb-3">
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Today's Tasks</h5>
-                <p class="card-text fs-4">@Model.TotalToday</p>
+<!-- Statistics Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-lg">
+        <div class="stat-card h-100 d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">Today's Tasks</span>
+                <div class="stat-icon stat-icon-primary">
+                    <i class="bi bi-calendar-event"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-0 text-dark">@Model.TotalToday</h3>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Completed Today</h5>
-                <p class="card-text fs-4">@Model.CompletedToday</p>
+    <div class="col-6 col-lg">
+        <div class="stat-card h-100 d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">Completed</span>
+                <div class="stat-icon stat-icon-success">
+                    <i class="bi bi-check2-circle"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-0 text-success">@Model.CompletedToday</h3>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Pending Today</h5>
-                <p class="card-text fs-4">@Model.PendingToday</p>
+    <div class="col-6 col-lg">
+        <div class="stat-card h-100 d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">Pending</span>
+                <div class="stat-icon stat-icon-info">
+                    <i class="bi bi-hourglass-split"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-0 text-info">@Model.PendingToday</h3>
             </div>
         </div>
     </div>
-    <div class="col-6 col-md-2">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Overdue</h5>
-                <p class="card-text fs-4 text-danger">@Model.Overdue</p>
+    <div class="col-6 col-lg">
+        <div class="stat-card h-100 d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">Overdue</span>
+                <div class="stat-icon stat-icon-danger">
+                    <i class="bi bi-exclamation-octagon"></i>
+                </div>
+            </div>
+            <div>
+                <h3 class="fw-bold mb-0 @(Model.Overdue > 0 ? "text-danger" : "text-dark")">@Model.Overdue</h3>
             </div>
         </div>
     </div>
-    <div class="col-12 col-md-4 mt-2 mt-md-0">
-        <div class="card text-center">
-            <div class="card-body">
-                <h5 class="card-title">Today's Completion Rate</h5>
-                <p class="card-text fs-4">@((Model.CompletionRate * 100).ToString("F0"))% </p>
+    <div class="col-12 col-lg-3">
+        <div class="stat-card h-100 d-flex flex-column justify-content-between">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+                <span class="text-muted small fw-semibold">Progress</span>
+                <span class="badge bg-primary-subtle text-primary fw-bold">@completionPercent%</span>
+            </div>
+            <div>
+                <div class="tp-progress mb-2">
+                    <div class="tp-progress-bar" role="progressbar" style="width: @completionPercent%;" aria-valuenow="@completionPercent" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <span class="text-muted" style="font-size: 0.75rem;">@Model.CompletedToday of @Model.TotalToday completed</span>
             </div>
         </div>
     </div>
 </div>
 
-<form method="get" class="row g-2 mb-3">
-    <div class="col-12 col-md-5">
-        <input type="search" name="SearchTerm" class="form-control" placeholder="Search tasks..." value="@(q.SearchTerm ?? string.Empty)" />
-    </div>
-    <div class="col-6 col-md-2">
-        <select name="Status" class="form-select">
-            <option value="">Any status</option>
-            @foreach (var s in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus)).Cast<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>())
-            {
-                var sval = ((int)s).ToString();
-                if (q.Status == s)
+<!-- Search & Filter Card -->
+<div class="filter-card mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <div class="col-12 col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="search" name="SearchTerm" class="form-control border-start-0 ps-0" placeholder="Search tasks..." value="@(q.SearchTerm ?? string.Empty)" />
+            </div>
+        </div>
+        <div class="col-6 col-md-2">
+            <select name="Status" class="form-select">
+                <option value="">Status: All</option>
+                @foreach (var s in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus)).Cast<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>())
                 {
-                    <option value="@sval" selected>@s</option>
+                    var sval = ((int)s).ToString();
+                    if (q.Status == s)
+                    {
+                        <option value="@sval" selected>@s</option>
+                    }
+                    else
+                    {
+                        <option value="@sval">@s</option>
+                    }
                 }
-                else
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <select name="CategoryId" class="form-select">
+                <option value="">Category: All</option>
+                @foreach (var c in cats)
                 {
-                    <option value="@sval">@s</option>
+                    if (q.CategoryId == c.Id)
+                    {
+                        <option value="@c.Id" selected>@c.Name</option>
+                    }
+                    else
+                    {
+                        <option value="@c.Id">@c.Name</option>
+                    }
                 }
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-2">
-        <select name="CategoryId" class="form-select">
-            <option value="">All categories</option>
-            @foreach (var c in cats)
-            {
-                if (q.CategoryId == c.Id)
-                {
-                    <option value="@c.Id" selected>@c.Name</option>
-                }
-                else
-                {
-                    <option value="@c.Id">@c.Name</option>
-                }
-            }
-        </select>
-    </div>
-    <div class="col-6 col-md-1">
-        <select name="SortBy" class="form-select">
-            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.DueDate) { <option value="0" selected>Due</option> } else { <option value="0">Due</option> }
-            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Priority) { <option value="1" selected>Priority</option> } else { <option value="1">Priority</option> }
-            @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Title) { <option value="5" selected>Title</option> } else { <option value="5">Title</option> }
-        </select>
-    </div>
-    <div class="col-6 col-md-1">
-        <select name="SortDirection" class="form-select">
-            @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Asc) { <option value="0" selected>Asc</option> } else { <option value="0">Asc</option> }
-            @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Desc) { <option value="1" selected>Desc</option> } else { <option value="1">Desc</option> }
-        </select>
-    </div>
-    <div class="col-12 col-md-1">
-        <button type="submit" class="btn btn-primary w-100">Apply</button>
-    </div>
-    <div class="col-12">
-        <small class="text-muted">Use filters to refine results. Sorting and search are supported.</small>
-    </div>
-</form>
+            </select>
+        </div>
+        <div class="col-6 col-md-2">
+            <select name="SortBy" class="form-select">
+                @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.DueDate) { <option value="0" selected>Sort: Due Date</option> } else { <option value="0">Sort: Due Date</option> }
+                @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Priority) { <option value="1" selected>Sort: Priority</option> } else { <option value="1">Sort: Priority</option> }
+                @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Title) { <option value="5" selected>Sort: Title</option> } else { <option value="5">Sort: Title</option> }
+            </select>
+        </div>
+        <div class="col-3 col-md-1">
+            <select name="SortDirection" class="form-select">
+                @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Asc) { <option value="0" selected>Asc</option> } else { <option value="0">Asc</option> }
+                @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Desc) { <option value="1" selected>Desc</option> } else { <option value="1">Desc</option> }
+            </select>
+        </div>
+        <div class="col-3 col-md-1">
+            <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+                <i class="bi bi-filter"></i>
+            </button>
+        </div>
+    </form>
+</div>
 
+<!-- Task List -->
 @if (!Model.TodayTasks.Any())
 {
-    <div class="alert alert-info text-center" role="alert">
+    <div class="empty-state">
+        <div class="empty-state-icon">
+            <i class="bi bi-check2-all"></i>
+        </div>
         @if (!string.IsNullOrWhiteSpace(q.SearchTerm))
         {
-            <div>No tasks match your search.</div>
+            <h4 class="fw-bold text-dark">No matching tasks found</h4>
+            <p class="text-muted small mb-3">Try adjusting your search terms or clearing your filters.</p>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Clear Filters</a>
         }
         else
         {
-            <div>You're all clear for today! <a asp-controller="Task" asp-action="Create">Create a task</a></div>
+            <h4 class="fw-bold text-dark">You're all caught up for today!</h4>
+            <p class="text-muted small mb-3">Enjoy your free time, or create a new task to stay ahead of schedule.</p>
+            <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm">
+                <i class="bi bi-plus-lg me-1"></i> Create Task
+            </a>
         }
     </div>
 }
 else
 {
-    <div class="table-responsive d-none d-md-block">
-    <table class="table align-middle">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Category</th>
-                <th>Priority</th>
-                <th>Due</th>
-                <th>Status</th>
-                <th>Recurring</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var t in Model.TodayTasks)
-        {
-            var rowClass = t.IsOverdue ? "table-danger" : "";
-            <tr class="@rowClass" data-task-id="@t.Id">
-                <td>@t.Title</td>
-                <td>@(t.CategoryName ?? "-")</td>
-                <td>
-                    @switch (t.Priority)
-                    {
-                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Low:
-                            <span class="badge bg-secondary">Low</span>
-                            break;
-                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium:
-                            <span class="badge bg-primary">Medium</span>
-                            break;
-                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.High:
-                            <span class="badge bg-warning text-dark">High</span>
-                            break;
-                        case PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical:
-                            <span class="badge bg-danger">Critical</span>
-                            break;
-                    }
-                </td>
-                <td>@(t.DueDate?.ToString("yyyy-MM-dd") ?? "-")</td>
-                <td class="task-status">@t.Status</td>
-                <td>@(t.IsRecurring ? "🔁" : "")</td>
-                <td class="text-end">
-                    <button class="btn btn-sm btn-success task-action me-1" data-action="complete" data-task-id="@t.Id" aria-label="Complete task">✓</button>
-                    <button class="btn btn-sm btn-outline-primary task-action me-1" data-action="reopen" data-task-id="@t.Id" aria-label="Reopen task">↺</button>
-                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary task-action me-1">Reschedule</a>
-                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary task-action me-1">Edit</a>
-                        <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" style="display:inline;" data-confirm="Delete this task?">
-                            <button type="submit" class="btn btn-sm btn-danger task-action">Delete</button>
-                        </form>
-                </td>
-            </tr>
-        }
-        </tbody>
-    </table>
+    <!-- Desktop Table View -->
+    <div class="tp-table-card d-none d-md-block">
+        <div class="table-responsive">
+            <table class="table tp-table mb-0 align-middle">
+                <thead>
+                    <tr>
+                        <th style="width: 40px;"></th>
+                        <th>Task Details</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Due Date</th>
+                        <th>Status</th>
+                        <th class="text-end" style="min-width: 190px;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                @foreach (var t in Model.TodayTasks)
+                {
+                    var isCompleted = t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed;
+                    var rowClass = t.IsOverdue ? "table-danger" : (isCompleted ? "table-success" : "");
+                    var priorityClass = t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical ? "badge-priority-critical" :
+                                        t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.High ? "badge-priority-high" :
+                                        t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium ? "badge-priority-medium" : "badge-priority-low";
+                    
+                    var statusClass = t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed ? "badge-status-completed" :
+                                      t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress ? "badge-status-inprogress" :
+                                      t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled ? "badge-status-cancelled" : "badge-status-notstarted";
+
+                    <tr class="@rowClass" data-task-id="@t.Id">
+                        <td>
+                            @if (isCompleted)
+                            {
+                                <button class="btn btn-sm btn-soft-primary task-action-btn" data-action="reopen" data-task-id="@t.Id" title="Reopen Task">
+                                    <i class="bi bi-arrow-counterclockwise"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-sm btn-soft-success task-action-btn" data-action="complete" data-task-id="@t.Id" title="Mark Complete">
+                                    <i class="bi bi-check-lg"></i>
+                                </button>
+                            }
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-2">
+                                <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-dark text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
+                                    @t.Title
+                                </a>
+                                @if (t.IsRecurring)
+                                {
+                                    <span class="badge bg-primary-subtle text-primary small py-1 px-2 rounded-pill" title="Recurring Task">
+                                        <i class="bi bi-repeat"></i>
+                                    </span>
+                                }
+                            </div>
+                        </td>
+                        <td>
+                            @if (!string.IsNullOrEmpty(t.CategoryName))
+                            {
+                                <span class="category-pill">
+                                    <i class="bi bi-tag-fill opacity-50"></i> @t.CategoryName
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="text-muted small">—</span>
+                            }
+                        </td>
+                        <td>
+                            <span class="badge-priority @priorityClass">@t.Priority</span>
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center gap-1 small @(t.IsOverdue ? "text-danger fw-bold" : "text-muted")">
+                                <i class="bi @(t.IsOverdue ? "bi-exclamation-circle-fill" : "bi-calendar3")"></i>
+                                @(t.DueDate?.ToString("MMM dd, yyyy") ?? "—")
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-status @statusClass task-status">@t.Status</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-secondary" title="Reschedule Task">
+                                    <i class="bi bi-calendar-event"></i>
+                                </a>
+                                <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-primary" title="Edit Task">
+                                    <i class="bi bi-pencil-fill"></i>
+                                </a>
+                                <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" class="d-inline" data-confirm="Are you sure you want to delete this task?">
+                                    <button type="submit" class="btn btn-sm btn-light border task-action-btn text-danger" title="Delete Task">
+                                        <i class="bi bi-trash-fill"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    @* Mobile card view *@
+    <!-- Mobile Card View -->
     <div class="d-block d-md-none">
-    @foreach (var t in Model.TodayTasks)
-    {
-        <div class="card mb-2 @((t.IsOverdue) ? "border-danger" : "")" data-task-id="@t.Id">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
-                    <h5 class="card-title mb-0">@t.Title</h5>
-                    <small class="text-muted">@t.DueDate?.ToString("yyyy-MM-dd")</small>
+        @foreach (var t in Model.TodayTasks)
+        {
+            var isCompleted = t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed;
+            var priorityClass = t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.Critical ? "badge-priority-critical" :
+                                t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.High ? "badge-priority-high" :
+                                t.Priority == PersonalToDo_Freelance.Domain.Enums.TaskPriority.Medium ? "badge-priority-medium" : "badge-priority-low";
+            var statusClass = t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed ? "badge-status-completed" :
+                              t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress ? "badge-status-inprogress" :
+                              t.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled ? "badge-status-cancelled" : "badge-status-notstarted";
+
+            <div class="task-card-mobile @(t.IsOverdue ? "task-card-overdue" : "") @(isCompleted ? "table-success" : "")" data-task-id="@t.Id">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                    <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-dark text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
+                        @t.Title
+                    </a>
+                    <span class="badge-priority @priorityClass">@t.Priority</span>
                 </div>
-                <p class="card-text mb-1">@(t.CategoryName ?? "-") • @t.Priority</p>
-                <p class="mb-2"><strong>Status:</strong> <span class="task-status">@t.Status</span> @if (t.IsRecurring){<span class="ms-2">🔁</span>}</p>
-                <div>
-                    <button class="btn btn-sm btn-success task-action me-1" data-action="complete" data-task-id="@t.Id" aria-label="Complete task">✓</button>
-                    <button class="btn btn-sm btn-outline-primary task-action me-1" data-action="reopen" data-task-id="@t.Id" aria-label="Reopen task">↺</button>
-                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-primary task-action me-1">Edit</a>
-                    <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-outline-secondary task-action me-1">Reschedule</a>
+                <div class="d-flex flex-wrap align-items-center gap-2 mb-3 small">
+                    @if (!string.IsNullOrEmpty(t.CategoryName))
+                    {
+                        <span class="category-pill">
+                            <i class="bi bi-tag-fill opacity-50"></i> @t.CategoryName
+                        </span>
+                    }
+                    <span class="badge-status @statusClass task-status">@t.Status</span>
+                    @if (t.IsRecurring)
+                    {
+                        <span class="badge bg-primary-subtle text-primary rounded-pill"><i class="bi bi-repeat"></i> Recurring</span>
+                    }
+                    <div class="ms-auto @(t.IsOverdue ? "text-danger fw-bold" : "text-muted")">
+                        <i class="bi bi-calendar3"></i> @(t.DueDate?.ToString("MMM dd") ?? "—")
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                    <div>
+                        <button class="btn btn-sm btn-soft-success rounded-pill px-3 py-1 task-action" data-action="complete" data-task-id="@t.Id">
+                            <i class="bi bi-check-lg me-1"></i> Done
+                        </button>
+                        <button class="btn btn-sm btn-soft-primary rounded-pill px-2 py-1 task-action" data-action="reopen" data-task-id="@t.Id" title="Reopen">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex gap-1">
+                        <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-secondary">
+                            <i class="bi bi-calendar-event"></i>
+                        </a>
+                        <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-primary">
+                            <i class="bi bi-pencil-fill"></i>
+                        </a>
+                        <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" class="d-inline" data-confirm="Are you sure you want to delete this task?">
+                            <button type="submit" class="btn btn-sm btn-light border task-action-btn text-danger">
+                                <i class="bi bi-trash-fill"></i>
+                            </button>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-    }
+        }
     </div>
 }
 
 @* Hidden antiforgery token for AJAX *@
 <form id="__antiForgeryForm">@Html.AntiForgeryToken()</form>
 
-<script src="/js/mytasks.js"></script>
+<script src="~/js/mytasks.js" asp-append-version="true"></script>
+

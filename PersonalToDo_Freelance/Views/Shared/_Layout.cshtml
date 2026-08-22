@@ -1,85 +1,154 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PersonalToDo_Freelance</title>
-    <script type="importmap"></script>
+    <title>@ViewData["Title"] - PersonalToDo</title>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PersonalToDo_Freelance.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PersonalToDo_Freelance</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+    <header class="sticky-top">
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
+            <div class="container">
+                <a class="navbar-brand d-flex align-items-center fw-bold text-dark fs-4" asp-area="" asp-controller="Home" asp-action="Index">
+                    <span class="brand-icon-wrapper me-2">
+                        <i class="bi bi-check2-square text-white"></i>
+                    </span>
+                    <span class="brand-text">TaskPulse</span>
+                </a>
+                <button class="navbar-toggler border-0 shadow-none p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain"
                         aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
+                    <i class="bi bi-list fs-2 text-dark"></i>
                 </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
+                <div class="navbar-collapse collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-lg-1">
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Dashboard" asp-action="Index">Dashboard</a>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Login">Login</a>
+                                <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active fw-semibold" : "")" asp-controller="Dashboard" asp-action="Index">
+                                    <i class="bi bi-grid-1x2-fill me-1 opacity-75"></i> Dashboard
+                                </a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="" asp-controller="Account" asp-action="Register">Register</a>
+                                <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "All" ? "active fw-semibold" : "")" asp-controller="Dashboard" asp-action="All">
+                                    <i class="bi bi-list-task me-1 opacity-75"></i> All Tasks
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active fw-semibold" : "")" asp-controller="Category" asp-action="Index">
+                                    <i class="bi bi-tags-fill me-1 opacity-75"></i> Categories
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "Statistics" ? "active fw-semibold" : "")" asp-controller="Dashboard" asp-action="Statistics">
+                                    <i class="bi bi-graph-up me-1 opacity-75"></i> Analytics
+                                </a>
                             </li>
                         }
                     </ul>
-                    @if (User?.Identity?.IsAuthenticated == true)
-                    {
-                        <ul class="navbar-nav">
-                            <li class="nav-item">
-                                <form asp-controller="Account" asp-action="Logout" method="post" class="form-inline">
-                                    <button type="submit" class="btn btn-link nav-link">Logout</button>
-                                </form>
-                            </li>
-                        </ul>
-                    }
+
+                    <div class="d-flex align-items-center gap-2">
+                        @if (User?.Identity?.IsAuthenticated == true)
+                        {
+                            <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm d-inline-flex align-items-center">
+                                <i class="bi bi-plus-lg me-1"></i> New Task
+                            </a>
+                            <div class="vr mx-2 text-muted opacity-25 d-none d-lg-block"></div>
+                            <div class="dropdown">
+                                <button class="btn btn-outline-light text-dark border-0 dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill bg-light" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <div class="user-avatar-sm">
+                                        <i class="bi bi-person-fill"></i>
+                                    </div>
+                                    <span class="d-none d-md-inline small fw-medium text-truncate" style="max-width: 140px;">@(User.Identity?.Name ?? "My Account")</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenu">
+                                    <li class="px-3 py-2 border-bottom">
+                                        <div class="small text-muted">Signed in as</div>
+                                        <div class="fw-semibold small text-truncate">@User.Identity?.Name</div>
+                                    </li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="dropdown-item p-0">
+                                            <button type="submit" class="dropdown-item py-2 text-danger d-flex align-items-center gap-2">
+                                                <i class="bi bi-box-arrow-right"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium" asp-controller="Account" asp-action="Login">
+                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                            </a>
+                            <a class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm" asp-controller="Account" asp-action="Register">
+                                <i class="bi bi-person-plus me-1"></i> Get Started
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
         </nav>
     </header>
-    <div class="container">
+
+    <div class="main-container container py-4">
         @* Alert area for TempData messages *@
         @if (TempData["Success"] != null)
         {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @TempData["Success"]
+            <div class="alert alert-success alert-dismissible fade show rounded-4 shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-check-circle-fill fs-5 text-success"></i>
+                <div class="flex-grow-1">@TempData["Success"]</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+        @if (TempData["Message"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show rounded-4 shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-info-circle-fill fs-5 text-info"></i>
+                <div class="flex-grow-1">@TempData["Message"]</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
         @if (TempData["Error"] != null)
         {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @TempData["Error"]
+            <div class="alert alert-danger alert-dismissible fade show rounded-4 shadow-sm border-0 d-flex align-items-center gap-2 mb-4" role="alert">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                <div class="flex-grow-1">@TempData["Error"]</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         }
+
         @* Toast container for client-side messages *@
-        <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index:1080;">
+        <div aria-live="polite" aria-atomic="true" class="position-fixed top-0 end-0 p-3" style="z-index: 1090;">
             <div id="toastContainer"></div>
         </div>
-        <main role="main" class="pb-3">
+
+        <main role="main" class="pb-4">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - PersonalToDo_Freelance - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <footer class="app-footer border-top bg-white py-4 mt-auto">
+        <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted small">
+            <div class="d-flex align-items-center gap-2">
+                <span class="fw-semibold text-dark">TaskPulse</span>
+                <span>&copy; @DateTime.UtcNow.Year Personal ToDo Manager</span>
+            </div>
+            <div class="d-flex gap-3">
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted hover-dark">Home</a>
+                <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted hover-dark">Privacy Policy</a>
+            </div>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
@@ -87,21 +156,33 @@
     @* Include confirm modal partial *@
     @await Html.PartialAsync("_ConfirmModal")
     <script>
-        // simple helper to show a toast from JS
+        // Modern toast helper
         window.showToast = function(message, type) {
             const container = document.getElementById('toastContainer');
             if(!container) return;
             const toastEl = document.createElement('div');
-            toastEl.className = 'toast align-items-center text-bg-' + (type || 'primary') + ' border-0';
+            const bgClass = type === 'danger' ? 'bg-danger text-white' : 
+                            type === 'success' ? 'bg-success text-white' : 
+                            type === 'warning' ? 'bg-warning text-dark' : 'bg-primary text-white';
+            const icon = type === 'danger' ? 'bi-exclamation-circle' : 
+                         type === 'success' ? 'bi-check-circle' : 
+                         type === 'warning' ? 'bi-exclamation-triangle' : 'bi-info-circle';
+
+            toastEl.className = `toast align-items-center ${bgClass} border-0 shadow-lg rounded-3 mb-2`;
             toastEl.setAttribute('role','alert');
             toastEl.setAttribute('aria-live','assertive');
             toastEl.setAttribute('aria-atomic','true');
-            toastEl.style.minWidth = '200px';
-            toastEl.innerHTML = `<div class="d-flex"><div class="toast-body">${message}</div><button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button></div>`;
+            toastEl.style.minWidth = '240px';
+            toastEl.innerHTML = `
+                <div class="d-flex align-items-center p-2">
+                    <i class="bi ${icon} fs-5 ms-2 me-2"></i>
+                    <div class="toast-body py-1 flex-grow-1">${message}</div>
+                    <button type="button" class="btn-close ${type === 'warning' ? '' : 'btn-close-white'} me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>`;
             container.appendChild(toastEl);
             const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
             bsToast.show();
-            toastEl.addEventListener('hidden.bs.toast', ()=> toastEl.remove());
+            toastEl.addEventListener('hidden.bs.toast', () => toastEl.remove());
         }
     </script>
     @await RenderSectionAsync("Scripts", required: false)

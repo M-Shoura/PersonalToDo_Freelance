@@ -1,77 +1,104 @@
 @model PersonalToDo_Freelance.Application.ViewModels.RecurrenceRuleViewModel
 @using PersonalToDo_Freelance.Domain.Enums
 
-<div class="border rounded p-3 mb-3" id="recurrence-fields">
-    <div class="form-check mb-3">
-        <input asp-for="IsRecurring" class="form-check-input" />
-        <label asp-for="IsRecurring" class="form-check-label">Repeat this task</label>
-    </div>
-
-    <div class="row g-3">
-        <div class="col-md-4">
-            <label asp-for="Type" class="form-label">Repeats</label>
-            <select asp-for="Type" class="form-select">
-                <option value="@((int)RecurrenceType.None)">Does not repeat</option>
-                <option value="@((int)RecurrenceType.Daily)">Daily</option>
-                <option value="@((int)RecurrenceType.Weekly)">Weekly</option>
-                <option value="@((int)RecurrenceType.Monthly)">Monthly</option>
-                <option value="@((int)RecurrenceType.Yearly)">Yearly</option>
-                <option value="@((int)RecurrenceType.Custom)">Custom</option>
-            </select>
-            <span asp-validation-for="Type" class="text-danger"></span>
+<div class="tp-card p-3 p-md-4 mb-4 bg-light bg-opacity-50" id="recurrence-fields">
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div class="d-flex align-items-center gap-2">
+            <div class="stat-icon stat-icon-primary rounded-circle" style="width: 36px; height: 36px; font-size: 1rem;">
+                <i class="bi bi-repeat"></i>
+            </div>
+            <div>
+                <h6 class="fw-bold text-dark mb-0">Recurring Task Schedule</h6>
+                <small class="text-muted">Automatically create repeating task occurrences</small>
+            </div>
         </div>
-
-        <div class="col-md-4">
-            <label asp-for="Interval" class="form-label">Every</label>
-            <input asp-for="Interval" class="form-control" type="number" min="1" />
-            <span asp-validation-for="Interval" class="text-danger"></span>
-        </div>
-
-        <div class="col-md-4">
-            <label asp-for="EndCondition" class="form-label">Ends</label>
-            <select asp-for="EndCondition" class="form-select">
-                <option value="0">Never</option>
-                <option value="1">On date</option>
-                <option value="2">After occurrences</option>
-            </select>
+        <div class="form-check form-switch mb-0 fs-5">
+            <input asp-for="IsRecurring" class="form-check-input" id="isRecurringToggle" role="switch" />
         </div>
     </div>
 
-    <input asp-for="DaysOfWeek" type="hidden" id="Recurrence_DaysOfWeek" />
-    <div class="mt-3">
-        <label class="form-label">Weekdays</label>
-        <div class="d-flex flex-wrap gap-2">
-            @foreach (var day in new[] { DaysOfWeekFlags.Sunday, DaysOfWeekFlags.Monday, DaysOfWeekFlags.Tuesday, DaysOfWeekFlags.Wednesday, DaysOfWeekFlags.Thursday, DaysOfWeekFlags.Friday, DaysOfWeekFlags.Saturday })
-            {
-                var selected = Model.DaysOfWeek.HasFlag(day);
-                <label class="form-check">
-                    <input class="form-check-input recurrence-weekday" type="checkbox" value="@((int)day)" checked="@selected" />
-                    <span class="form-check-label">@day</span>
-                </label>
-            }
-        </div>
-        <span asp-validation-for="DaysOfWeek" class="text-danger"></span>
-    </div>
+    <div id="recurrenceOptions" style="@(Model.IsRecurring ? "" : "display:none;")">
+        <hr class="my-3 opacity-10" />
+        <div class="row g-3">
+            <div class="col-12 col-md-4">
+                <label asp-for="Type" class="form-label small fw-semibold text-muted">Repeat Frequency</label>
+                <select asp-for="Type" class="form-select" id="recurrenceTypeSelect">
+                    <option value="@((int)RecurrenceType.None)">Does not repeat</option>
+                    <option value="@((int)RecurrenceType.Daily)">Daily</option>
+                    <option value="@((int)RecurrenceType.Weekly)">Weekly</option>
+                    <option value="@((int)RecurrenceType.Monthly)">Monthly</option>
+                    <option value="@((int)RecurrenceType.Yearly)">Yearly</option>
+                    <option value="@((int)RecurrenceType.Custom)">Custom</option>
+                </select>
+                <span asp-validation-for="Type" class="text-danger small"></span>
+            </div>
 
-    <div class="row g-3 mt-1">
-        <div class="col-md-6">
-            <label asp-for="EndDate" class="form-label">End date</label>
-            <input asp-for="EndDate" class="form-control" type="date" />
-            <span asp-validation-for="EndDate" class="text-danger"></span>
+            <div class="col-6 col-md-4">
+                <label asp-for="Interval" class="form-label small fw-semibold text-muted">Every</label>
+                <div class="input-group">
+                    <input asp-for="Interval" class="form-control" type="number" min="1" />
+                    <span class="input-group-text bg-white small text-muted">time(s)</span>
+                </div>
+                <span asp-validation-for="Interval" class="text-danger small"></span>
+            </div>
+
+            <div class="col-6 col-md-4">
+                <label asp-for="EndCondition" class="form-label small fw-semibold text-muted">Ends</label>
+                <select asp-for="EndCondition" class="form-select" id="recurrenceEndCondition">
+                    <option value="0">Never</option>
+                    <option value="1">On specific date</option>
+                    <option value="2">After count</option>
+                </select>
+            </div>
         </div>
-        <div class="col-md-6">
-            <label asp-for="OccurrenceCount" class="form-label">Occurrence count</label>
-            <input asp-for="OccurrenceCount" class="form-control" type="number" min="1" />
-            <span asp-validation-for="OccurrenceCount" class="text-danger"></span>
+
+        <input asp-for="DaysOfWeek" type="hidden" id="Recurrence_DaysOfWeek" />
+        <div class="mt-3">
+            <label class="form-label small fw-semibold text-muted d-block">Repeats on Days</label>
+            <div class="d-flex flex-wrap gap-2">
+                @foreach (var day in new[] { DaysOfWeekFlags.Sunday, DaysOfWeekFlags.Monday, DaysOfWeekFlags.Tuesday, DaysOfWeekFlags.Wednesday, DaysOfWeekFlags.Thursday, DaysOfWeekFlags.Friday, DaysOfWeekFlags.Saturday })
+                {
+                    var selected = Model.DaysOfWeek.HasFlag(day);
+                    var shortName = day.ToString().Substring(0, 3);
+                    <div>
+                        <input class="weekday-pill-input recurrence-weekday" type="checkbox" id="day_@day" value="@((int)day)" checked="@selected" />
+                        <label class="weekday-pill-label" for="day_@day" title="@day">@shortName</label>
+                    </div>
+                }
+            </div>
+            <span asp-validation-for="DaysOfWeek" class="text-danger small"></span>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-12 col-md-6" id="endDateWrapper">
+                <label asp-for="EndDate" class="form-label small fw-semibold text-muted">End Date</label>
+                <input asp-for="EndDate" class="form-control" type="date" />
+                <span asp-validation-for="EndDate" class="text-danger small"></span>
+            </div>
+            <div class="col-12 col-md-6" id="occurrenceCountWrapper">
+                <label asp-for="OccurrenceCount" class="form-label small fw-semibold text-muted">Max Occurrences</label>
+                <input asp-for="OccurrenceCount" class="form-control" type="number" min="1" />
+                <span asp-validation-for="OccurrenceCount" class="text-danger small"></span>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
     (() => {
+        const toggle = document.getElementById('isRecurringToggle');
+        const options = document.getElementById('recurrenceOptions');
         const hidden = document.getElementById('Recurrence_DaysOfWeek');
         const boxes = document.querySelectorAll('.recurrence-weekday');
-        const update = () => {
+
+        if (toggle && options) {
+            toggle.addEventListener('change', () => {
+                options.style.display = toggle.checked ? 'block' : 'none';
+            });
+        }
+
+        const updateDays = () => {
+            if (!hidden) return;
             let value = 0;
             boxes.forEach(box => {
                 if (box.checked) value |= Number(box.value);
@@ -79,7 +106,8 @@
             hidden.value = value;
         };
 
-        boxes.forEach(box => box.addEventListener('change', update));
-        update();
+        boxes.forEach(box => box.addEventListener('change', updateDays));
+        updateDays();
     })();
 </script>
+

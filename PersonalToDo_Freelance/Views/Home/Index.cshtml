@@ -1,8 +1,103 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    ViewData["Title"] = "TaskPulse - Master Your Productivity";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<!-- Hero Section -->
+<div class="hero-gradient text-white mb-5 shadow-lg">
+    <div class="row align-items-center py-3 py-lg-4">
+        <div class="col-12 col-lg-7 mb-4 mb-lg-0">
+            <span class="badge bg-white bg-opacity-20 text-white rounded-pill px-3 py-2 fw-medium mb-3">
+                <i class="bi bi-stars text-warning me-1"></i> Personal Productivity Elevated
+            </span>
+            <h1 class="display-4 fw-bold text-white mb-3" style="letter-spacing: -0.03em; line-height: 1.15;">
+                Organize your life, achieve your goals with ease.
+            </h1>
+            <p class="lead text-white-50 mb-4" style="max-width: 540px;">
+                TaskPulse is your personal workspace for managing daily routines, smart recurring occurrences, category management, and visual productivity analytics.
+            </p>
+            <div class="d-flex flex-wrap gap-3">
+                @if (User?.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light btn-lg rounded-pill px-4 fw-bold text-primary shadow">
+                        <i class="bi bi-grid-fill me-1"></i> Open Dashboard
+                    </a>
+                    <a asp-controller="Task" asp-action="Create" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
+                        <i class="bi bi-plus-lg me-1"></i> New Task
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="Account" asp-action="Register" class="btn btn-light btn-lg rounded-pill px-4 fw-bold text-primary shadow">
+                        <i class="bi bi-rocket-takeoff me-1"></i> Get Started Free
+                    </a>
+                    <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg rounded-pill px-4 fw-bold">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                    </a>
+                }
+            </div>
+        </div>
+        <div class="col-12 col-lg-5">
+            <div class="hero-feature-card">
+                <div class="d-flex align-items-center justify-content-between mb-3 border-bottom border-white border-opacity-10 pb-2">
+                    <span class="small text-white-50"><i class="bi bi-calendar3 me-1"></i> Today's Schedule</span>
+                    <span class="badge bg-success rounded-pill px-2 py-1 small">Active</span>
+                </div>
+                <div class="d-flex flex-column gap-2">
+                    <div class="p-2 rounded-3 bg-white bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            <span class="small text-white text-decoration-line-through opacity-75">Review project milestones</span>
+                        </div>
+                        <span class="badge bg-white bg-opacity-20 small">High</span>
+                    </div>
+                    <div class="p-2 rounded-3 bg-white bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-circle text-white-50 fs-5"></i>
+                            <span class="small text-white">Weekly team sync</span>
+                        </div>
+                        <span class="badge bg-primary small">Recurring</span>
+                    </div>
+                    <div class="p-2 rounded-3 bg-white bg-opacity-10 d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center gap-2">
+                            <i class="bi bi-circle text-white-50 fs-5"></i>
+                            <span class="small text-white">Prepare financial budget</span>
+                        </div>
+                        <span class="badge bg-danger small">Critical</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Features Grid -->
+<div class="row g-4 mb-5">
+    <div class="col-12 col-md-4">
+        <div class="tp-card p-4 h-100 text-center">
+            <div class="stat-icon stat-icon-primary mx-auto rounded-circle mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="bi bi-repeat"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Smart Recurrence Engine</h5>
+            <p class="text-muted small mb-0">Set tasks to repeat daily, weekly on chosen weekdays, monthly, or yearly with automatic occurrences generation.</p>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="tp-card p-4 h-100 text-center">
+            <div class="stat-icon stat-icon-success mx-auto rounded-circle mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="bi bi-graph-up-arrow"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Productivity Analytics</h5>
+            <p class="text-muted small mb-0">Visualize completion rates, historical timelines, and priority distributions with interactive charts.</p>
+        </div>
+    </div>
+    <div class="col-12 col-md-4">
+        <div class="tp-card p-4 h-100 text-center">
+            <div class="stat-icon stat-icon-warning mx-auto rounded-circle mb-3" style="width: 56px; height: 56px; font-size: 1.5rem;">
+                <i class="bi bi-clock-history"></i>
+            </div>
+            <h5 class="fw-bold text-dark mb-2">Overdue & Bulk Catch-up</h5>
+            <p class="text-muted small mb-0">Never lose track of delayed tasks with automated overdue alerts and 1-click bulk rescheduling.</p>
+        </div>
+    </div>
+</div>
+
