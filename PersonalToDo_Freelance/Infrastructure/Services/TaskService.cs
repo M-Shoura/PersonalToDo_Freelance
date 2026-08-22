@@ -351,6 +351,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             var overdue = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value < date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
 
             var todayTasks = await totalTodayQ
+                .Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled)
                 .Include(t => t.Category)
                 .Include(t => t.RecurrenceRule)
                 .OrderBy(t => t.DueDate)
@@ -397,8 +398,8 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             var tasksDueInRangeQ = baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value >= startDate && t.DueDate.Value < endExclusive);
             var pendingTasks = await tasksDueInRangeQ.Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
 
-            // Overdue as of end date
-            var overdueTasks = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date < endExclusive.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
+            // Overdue as of start date (tasks whose due date is before the reporting window)
+            var overdueTasks = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date < startDate && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
 
             // Completion rate = completed for tasks due in range / tasks due in range
             var dueCount = await tasksDueInRangeQ.CountAsync();
