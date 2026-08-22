@@ -1,18 +1,27 @@
 @model PersonalToDo_Freelance.Application.ViewModels.StatisticsViewModel
+@using System.Text.Json
 @{
     ViewData["Title"] = "Productivity Statistics";
 }
 
 <h2>Productivity Statistics</h2>
 
-<form method="get" class="row g-2 mb-3">
+<form method="get" class="row g-2 mb-3" id="statsForm">
+    <div class="col-12 mb-2">
+        <div class="btn-group" role="group" aria-label="Presets">
+            <button type="button" class="btn btn-outline-secondary" data-preset="today">Today</button>
+            <button type="button" class="btn btn-outline-secondary" data-preset="week">This Week</button>
+            <button type="button" class="btn btn-outline-secondary" data-preset="month">This Month</button>
+            <button type="button" class="btn btn-outline-secondary" data-preset="year">This Year</button>
+        </div>
+    </div>
     <div class="col-6 col-md-3">
         <label class="form-label">Start</label>
-        <input type="date" name="start" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
+        <input type="date" name="start" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
     </div>
     <div class="col-6 col-md-3">
         <label class="form-label">End</label>
-        <input type="date" name="end" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
+        <input type="date" name="end" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
     </div>
     <div class="col-12 col-md-2 align-self-end">
         <button type="submit" class="btn btn-primary">Apply</button>
@@ -28,43 +37,27 @@
 </div>
 
 <div class="row">
-    <div class="col-12 col-md-6">
-        <h4>Tasks by Category</h4>
-        <table class="table table-sm">
-            <thead><tr><th>Category</th><th class="text-end">Count</th></tr></thead>
-            <tbody>
-                @foreach(var c in Model.TasksByCategory)
-                {
-                    <tr><td>@c.Category</td><td class="text-end">@c.Count</td></tr>
-                }
-            </tbody>
-        </table>
+    <div class="col-12 col-md-6 mb-4">
+        <h4 class="mb-2">Completed Tasks Over Time</h4>
+        <canvas id="completedChart" aria-label="Completed tasks over time" role="img"></canvas>
     </div>
-    <div class="col-12 col-md-6">
-        <h4>Tasks by Priority</h4>
-        <table class="table table-sm">
-            <thead><tr><th>Priority</th><th class="text-end">Count</th></tr></thead>
-            <tbody>
-                @foreach(var p in Model.TasksByPriority)
-                {
-                    <tr><td>@p.Priority</td><td class="text-end">@p.Count</td></tr>
-                }
-            </tbody>
-        </table>
+    <div class="col-12 col-md-6 mb-4">
+        <h4 class="mb-2">Tasks by Category</h4>
+        <canvas id="categoryChart" aria-label="Tasks by category" role="img"></canvas>
+    </div>
+    <div class="col-12 col-md-6 mb-4">
+        <h4 class="mb-2">Tasks by Priority</h4>
+        <canvas id="priorityChart" aria-label="Tasks by priority" role="img"></canvas>
     </div>
 </div>
 
-<div class="row mt-3">
-    <div class="col-12">
-        <h4>Completed Tasks Per Day</h4>
-        <table class="table table-sm">
-            <thead><tr><th>Date</th><th class="text-end">Count</th></tr></thead>
-            <tbody>
-                @foreach(var d in Model.CompletedPerDay)
-                {
-                    <tr><td>@d.Date.ToString("yyyy-MM-dd")</td><td class="text-end">@d.Count</td></tr>
-                }
-            </tbody>
-        </table>
-    </div>
-</div>
+@* Provide structured data to JavaScript (no business logic in JS) *@
+<script>
+    const completedPerDayData = @Html.Raw(JsonSerializer.Serialize(Model.CompletedPerDay.Select(d => new { date = d.Date.ToString("yyyy-MM-dd"), count = d.Count })));
+    const tasksByCategoryData = @Html.Raw(JsonSerializer.Serialize(Model.TasksByCategory.Select(c => new { category = c.Category, count = c.Count })));
+    const tasksByPriorityData = @Html.Raw(JsonSerializer.Serialize(Model.TasksByPriority.Select(p => new { priority = p.Priority.ToString(), count = p.Count })));
+</script>
+
+@* Chart.js (lightweight, well-maintained) *@
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="/js/statistics.js"></script>
