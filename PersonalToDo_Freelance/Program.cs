@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using PersonalToDo_Freelance.Data;
 using PersonalToDo_Freelance.Models;
 using PersonalToDo_Freelance.Infrastructure;
@@ -55,6 +56,23 @@ namespace PersonalToDo_Freelance
             });
 
             var app = builder.Build();
+
+            // Apply any pending EF Core migrations at startup in Development.
+            if (app.Environment.IsDevelopment())
+            {
+                using var scope = app.Services.CreateScope();
+                var services = scope.ServiceProvider;
+                try
+                {
+                    var db = services.GetRequiredService<ApplicationDbContext>();
+                    db.Database.Migrate();
+                }
+                catch (Exception ex)
+                {
+                    var logger = services.GetRequiredService<ILogger<Program>>();
+                    logger.LogError(ex, "An error occurred while migrating the database.");
+                }
+            }
 
 
             if (!app.Environment.IsDevelopment())
