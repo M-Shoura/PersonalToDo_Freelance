@@ -22,5 +22,14 @@ namespace PersonalToDo_Freelance.Controllers
             var model = await _taskService.GetDashboardAsync(DateTime.UtcNow.Date);
             return View(model);
         }
+
+        [HttpGet]
+        public async Task<IActionResult> Statistics(DateTime? start, DateTime? end)
+        {
+            var s = start ?? DateTime.UtcNow.Date.AddDays(-30);
+            var e = end ?? DateTime.UtcNow.Date;
+            var vm = await _taskService.GetStatisticsAsync(s, e);
+            return View(vm);
+        }
     }
 }

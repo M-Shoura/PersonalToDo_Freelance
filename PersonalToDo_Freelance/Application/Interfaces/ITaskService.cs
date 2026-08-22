@@ -13,6 +13,7 @@ namespace PersonalToDo_Freelance.Application.Interfaces
         Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long id, Domain.Enums.TodoTaskStatus newStatus);
         Task<IReadOnlyList<TaskListItemViewModel>> GetUserTasksAsync(Application.ViewModels.TaskQueryParameters? query = null);
         Task<Application.ViewModels.DashboardViewModel> GetDashboardAsync(DateTime? forDate = null);
+        Task<Application.ViewModels.StatisticsViewModel> GetStatisticsAsync(DateTime start, DateTime end);
         Task<(bool Succeeded, string? Error)> RescheduleAsync(long id, DateTime newDueDate);
         Task<int> BulkRescheduleOverdueAsync(DateTime newDueDate);
         Task<(bool Succeeded, string? Error)> StopRecurrenceAsync(long id, DateTime? effectiveEndDate = null);

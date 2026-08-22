@@ -380,6 +380,65 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             };
         }
 
+        public async Task<Application.ViewModels.StatisticsViewModel> GetStatisticsAsync(DateTime start, DateTime end)
+        {
+            var userId = _user.UserId ?? string.Empty;
+            var startDate = start.Date;
+            var endExclusive = end.Date.AddDays(1);
+
+            var baseQ = _db.Tasks.AsNoTracking().Where(t => t.UserId == userId && !t.IsDeleted);
+
+            var tasksCreatedQ = baseQ.Where(t => t.CreatedAt >= startDate && t.CreatedAt < endExclusive);
+            var tasksCreated = await tasksCreatedQ.CountAsync();
+
+            var tasksCompletedQ = baseQ.Where(t => t.CompletedAt.HasValue && t.CompletedAt.Value >= startDate && t.CompletedAt.Value < endExclusive);
+            var tasksCompleted = await tasksCompletedQ.CountAsync();
+
+            var tasksDueInRangeQ = baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value >= startDate && t.DueDate.Value < endExclusive);
+            var pendingTasks = await tasksDueInRangeQ.Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
+
+            // Overdue as of end date
+            var overdueTasks = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value.Date < endExclusive.Date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
+
+            // Completion rate = completed for tasks due in range / tasks due in range
+            var dueCount = await tasksDueInRangeQ.CountAsync();
+            var completedOfDue = await tasksDueInRangeQ.Where(t => t.Status == Domain.Enums.TodoTaskStatus.Completed && t.CompletedAt.HasValue && t.CompletedAt.Value >= startDate && t.CompletedAt.Value < endExclusive).CountAsync();
+            double completionRate = dueCount == 0 ? 0 : (double)completedOfDue / dueCount;
+
+            // Tasks by category (created in range)
+            var byCategory = await tasksCreatedQ
+                .GroupBy(t => t.Category != null ? t.Category.Name : "Uncategorized")
+                .Select(g => new Application.ViewModels.CategoryCountViewModel { Category = g.Key ?? "Uncategorized", Count = g.Count() })
+                .ToListAsync();
+
+            // Tasks by priority (created in range)
+            var byPriority = await tasksCreatedQ
+                .GroupBy(t => t.Priority)
+                .Select(g => new Application.ViewModels.PriorityCountViewModel { Priority = g.Key, Count = g.Count() })
+                .ToListAsync();
+
+            // Completed per day
+            var completedPerDay = await tasksCompletedQ
+                .GroupBy(t => t.CompletedAt!.Value.Date)
+                .Select(g => new Application.ViewModels.DailyCountViewModel { Date = g.Key, Count = g.Count() })
+                .OrderBy(d => d.Date)
+                .ToListAsync();
+
+            return new Application.ViewModels.StatisticsViewModel
+            {
+                StartDate = startDate,
+                EndDate = end.Date,
+                TasksCreated = tasksCreated,
+                TasksCompleted = tasksCompleted,
+                PendingTasks = pendingTasks,
+                OverdueTasks = overdueTasks,
+                CompletionRate = completionRate,
+                TasksByCategory = byCategory,
+                TasksByPriority = byPriority,
+                CompletedPerDay = completedPerDay
+            };
+        }
+
         private static string? ValidateRecurrence(RecurrenceRuleViewModel recurrence)
         {
             var result = recurrence.Validate(new System.ComponentModel.DataAnnotations.ValidationContext(recurrence)).FirstOrDefault();
