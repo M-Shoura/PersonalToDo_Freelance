@@ -985,8 +985,153 @@ tr.table-success {
 }
 
 /* --------------------------------------------------------------------------
-   14. Responsive Layout Breakpoints & Enhancements
+   14. Kanban Board Layout & Drag-and-Drop Styles
    -------------------------------------------------------------------------- */
+.kanban-board-container {
+  width: 100%;
+}
+
+.kanban-column {
+  background: var(--tp-surface-muted);
+  border: 1px solid var(--tp-border-color);
+  border-radius: var(--tp-radius-lg);
+  padding: 1rem;
+  min-height: 520px;
+  display: flex;
+  flex-direction: column;
+  transition: var(--tp-theme-transition);
+}
+
+.kanban-column-header {
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--tp-border-color);
+}
+
+.kanban-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.dot-todo { background-color: var(--tp-primary); box-shadow: 0 0 8px rgba(79, 70, 229, 0.4); }
+.dot-progress { background-color: var(--tp-warning); box-shadow: 0 0 8px rgba(245, 158, 11, 0.4); }
+.dot-done { background-color: var(--tp-success); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); }
+.dot-cancelled { background-color: var(--tp-slate-400); }
+
+.kanban-count {
+  background-color: var(--tp-surface-elevated);
+  color: var(--tp-text-muted);
+  border: 1px solid var(--tp-border-color);
+  font-weight: 600;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.6rem;
+}
+
+.kanban-card-list {
+  flex: 1;
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+  border-radius: var(--tp-radius-md);
+  padding: 0.25rem 0;
+  transition: all 0.2s ease;
+}
+
+.kanban-card-list.drag-over {
+  background-color: var(--tp-primary-subtle);
+  outline: 2px dashed var(--tp-primary);
+  outline-offset: -2px;
+}
+
+.kanban-card {
+  cursor: grab;
+  user-select: none;
+  border-radius: var(--tp-radius-md);
+  border: 1px solid var(--tp-border-color);
+  background: var(--tp-surface-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+.kanban-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--tp-shadow-md);
+  border-color: var(--tp-primary-border);
+}
+
+.kanban-card:active {
+  cursor: grabbing;
+}
+
+.kanban-card.is-dragging {
+  opacity: 0.4;
+  transform: scale(0.96) rotate(1deg);
+  border: 1px dashed var(--tp-primary);
+}
+
+.kanban-card-overdue {
+  border-left: 3px solid var(--tp-danger) !important;
+}
+
+.kanban-card-completed {
+  opacity: 0.85;
+}
+
+.kanban-card-title a {
+  color: var(--tp-text-primary);
+  transition: color 0.15s ease;
+}
+
+.kanban-card-title a:hover {
+  color: var(--tp-primary);
+}
+
+.kanban-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2.5rem 1rem;
+  border: 1px dashed var(--tp-border-color);
+  border-radius: var(--tp-radius-md);
+  text-align: center;
+  background: rgba(0,0,0,0.01);
+  margin-top: 0.5rem;
+}
+
+.drag-handle {
+  cursor: grab;
+  opacity: 0.5;
+  transition: opacity 0.15s ease;
+}
+
+.kanban-card:hover .drag-handle {
+  opacity: 1;
+}
+
+.kanban-action-btn {
+  color: var(--tp-text-muted);
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kanban-action-btn:hover {
+  color: var(--tp-text-primary);
+  background-color: var(--tp-surface-hover);
+}
+
+/* --------------------------------------------------------------------------
+   15. Responsive Layout Breakpoints & Enhancements
+   -------------------------------------------------------------------------- */
+@media (max-width: 1199.98px) {
+  .kanban-scroll-wrapper {
+    flex-wrap: wrap;
+  }
+}
+
 @media (max-width: 991.98px) {
   .navbar-collapse {
     background-color: var(--tp-surface-card);

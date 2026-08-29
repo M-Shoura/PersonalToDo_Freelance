@@ -115,6 +115,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 Description = t.Description,
                 CategoryId = t.CategoryId,
                 Priority = t.Priority,
+                Status = t.Status,
                 StartDate = t.StartDate,
                 DueDate = t.DueDate,
                 Recurrence = ToRecurrenceViewModel(t.RecurrenceRule)
@@ -142,6 +143,14 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             t.Description = model.Description;
             t.CategoryId = model.CategoryId;
             t.Priority = model.Priority;
+            if (t.Status != model.Status)
+            {
+                t.Status = model.Status;
+                if (model.Status == TodoTaskStatus.Completed && !t.CompletedAt.HasValue)
+                    t.CompletedAt = DateTime.UtcNow;
+                else if (model.Status != TodoTaskStatus.Completed)
+                    t.CompletedAt = null;
+            }
             t.StartDate = model.StartDate;
             t.DueDate = model.DueDate;
             t.UpdatedAt = DateTime.UtcNow;

@@ -44,6 +44,8 @@ namespace PersonalToDo_Freelance.Application.ViewModels
 
         public DateTime? DueDate { get; set; }
 
+        public TodoTaskStatus Status { get; set; } = TodoTaskStatus.NotStarted;
+
         public RecurrenceRuleViewModel Recurrence { get; set; } = new();
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
