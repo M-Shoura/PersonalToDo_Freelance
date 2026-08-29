@@ -8,7 +8,7 @@
 <!-- Page Header -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold text-dark mb-1">All Tasks</h2>
+        <h2 class="fw-bold mb-1">All Tasks</h2>
         <p class="text-muted mb-0 small">
             <i class="bi bi-stack me-1 text-primary"></i> View and manage your complete task list
         </p>
@@ -43,14 +43,14 @@
 <!-- Search & Filter Card -->
 <div class="filter-card mb-4">
     <form method="get" class="row g-2 align-items-center">
-        <div class="col-12 col-md-4">
-            <div class="input-group">
-                <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+        <div class="col-12 col-md-4 col-lg-4">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text border-end-0 text-muted"><i class="bi bi-search"></i></span>
                 <input type="search" name="SearchTerm" class="form-control border-start-0 ps-0" placeholder="Search all tasks..." value="@(q.SearchTerm ?? string.Empty)" />
             </div>
         </div>
-        <div class="col-6 col-md-2">
-            <select name="Status" class="form-select">
+        <div class="col-6 col-md-2 col-lg-2">
+            <select name="Status" class="form-select form-select-sm">
                 <option value="">Status: All</option>
                 @foreach (var s in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus)).Cast<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>())
                 {
@@ -66,8 +66,8 @@
                 }
             </select>
         </div>
-        <div class="col-6 col-md-2">
-            <select name="CategoryId" class="form-select">
+        <div class="col-6 col-md-2 col-lg-2">
+            <select name="CategoryId" class="form-select form-select-sm">
                 <option value="">Category: All</option>
                 @foreach (var c in cats)
                 {
@@ -82,21 +82,21 @@
                 }
             </select>
         </div>
-        <div class="col-6 col-md-2">
-            <select name="SortBy" class="form-select">
+        <div class="col-6 col-md-2 col-lg-2">
+            <select name="SortBy" class="form-select form-select-sm">
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.DueDate) { <option value="0" selected>Sort: Due Date</option> } else { <option value="0">Sort: Due Date</option> }
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Priority) { <option value="1" selected>Sort: Priority</option> } else { <option value="1">Sort: Priority</option> }
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Title) { <option value="5" selected>Sort: Title</option> } else { <option value="5">Sort: Title</option> }
             </select>
         </div>
-        <div class="col-3 col-md-1">
-            <select name="SortDirection" class="form-select">
+        <div class="col-3 col-md-1 col-lg-1">
+            <select name="SortDirection" class="form-select form-select-sm">
                 @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Asc) { <option value="0" selected>Asc</option> } else { <option value="0">Asc</option> }
                 @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Desc) { <option value="1" selected>Desc</option> } else { <option value="1">Desc</option> }
             </select>
         </div>
-        <div class="col-3 col-md-1">
-            <button type="submit" class="btn btn-primary w-100 d-flex justify-content-center align-items-center">
+        <div class="col-3 col-md-1 col-lg-1">
+            <button type="submit" class="btn btn-primary btn-sm w-100 d-flex justify-content-center align-items-center" title="Apply Filter">
                 <i class="bi bi-filter"></i>
             </button>
         </div>
@@ -112,13 +112,13 @@
         </div>
         @if (!string.IsNullOrWhiteSpace(q.SearchTerm))
         {
-            <h4 class="fw-bold text-dark">No tasks match your search</h4>
+            <h4 class="fw-bold">No tasks match your search</h4>
             <p class="text-muted small mb-3">Try adjusting your keywords or clearing the active filters.</p>
             <a asp-action="All" class="btn btn-outline-secondary btn-sm rounded-pill px-4">Clear Filters</a>
         }
         else
         {
-            <h4 class="fw-bold text-dark">No tasks found</h4>
+            <h4 class="fw-bold">No tasks found</h4>
             <p class="text-muted small mb-3">Get started by creating your first task to stay organized and productive.</p>
             <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-4 py-2 shadow-sm">
                 <i class="bi bi-plus-lg me-1"></i> Create Task
@@ -134,13 +134,13 @@ else
             <table class="table tp-table mb-0 align-middle">
                 <thead>
                     <tr>
-                        <th style="width: 40px;"></th>
+                        <th style="width: 44px;"></th>
                         <th>Task Details</th>
                         <th>Category</th>
                         <th>Priority</th>
                         <th>Due Date</th>
                         <th>Status</th>
-                        <th class="text-end" style="min-width: 190px;">Actions</th>
+                        <th class="text-end" style="min-width: 170px;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -172,7 +172,7 @@ else
                         </td>
                         <td>
                             <div class="d-flex align-items-center gap-2">
-                                <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-dark text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
+                                <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
                                     @t.Title
                                 </a>
                                 @if (t.IsRecurring)
@@ -209,14 +209,14 @@ else
                         </td>
                         <td class="text-end">
                             <div class="d-inline-flex align-items-center gap-1">
-                                <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-secondary" title="Reschedule Task">
+                                <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="task-action-btn text-secondary" title="Reschedule Task">
                                     <i class="bi bi-calendar-event"></i>
                                 </a>
-                                <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-primary" title="Edit Task">
+                                <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="task-action-btn text-primary" title="Edit Task">
                                     <i class="bi bi-pencil-fill"></i>
                                 </a>
                                 <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" class="d-inline" data-confirm="Are you sure you want to delete this task?">
-                                    <button type="submit" class="btn btn-sm btn-light border task-action-btn text-danger" title="Delete Task">
+                                    <button type="submit" class="task-action-btn text-danger" title="Delete Task">
                                         <i class="bi bi-trash-fill"></i>
                                     </button>
                                 </form>
@@ -243,7 +243,7 @@ else
 
             <div class="task-card-mobile @(t.IsOverdue ? "task-card-overdue" : "") @(isCompleted ? "table-success" : "")" data-task-id="@t.Id">
                 <div class="d-flex justify-content-between align-items-start mb-2">
-                    <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-dark text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
+                    <a asp-controller="Task" asp-action="Details" asp-route-id="@t.Id" class="fw-semibold text-decoration-none task-title-text @(isCompleted ? "text-decoration-line-through text-muted" : "")">
                         @t.Title
                     </a>
                     <span class="badge-priority @priorityClass">@t.Priority</span>
@@ -265,7 +265,7 @@ else
                     </div>
                 </div>
                 <div class="d-flex justify-content-between align-items-center pt-2 border-top">
-                    <div>
+                    <div class="d-flex gap-1">
                         <button class="btn btn-sm btn-soft-success rounded-pill px-3 py-1 task-action" data-action="complete" data-task-id="@t.Id">
                             <i class="bi bi-check-lg me-1"></i> Done
                         </button>
@@ -274,14 +274,14 @@ else
                         </button>
                     </div>
                     <div class="d-flex gap-1">
-                        <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-secondary">
+                        <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@t.Id" class="task-action-btn text-secondary">
                             <i class="bi bi-calendar-event"></i>
                         </a>
-                        <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="btn btn-sm btn-light border task-action-btn text-primary">
+                        <a asp-controller="Task" asp-action="Edit" asp-route-id="@t.Id" class="task-action-btn text-primary">
                             <i class="bi bi-pencil-fill"></i>
                         </a>
                         <form asp-controller="Task" asp-action="Delete" asp-route-id="@t.Id" method="post" class="d-inline" data-confirm="Are you sure you want to delete this task?">
-                            <button type="submit" class="btn btn-sm btn-light border task-action-btn text-danger">
+                            <button type="submit" class="task-action-btn text-danger">
                                 <i class="bi bi-trash-fill"></i>
                             </button>
                         </form>
