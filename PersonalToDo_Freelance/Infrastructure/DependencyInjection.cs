@@ -22,6 +22,8 @@ namespace PersonalToDo_Freelance.Infrastructure
 
             services.AddHostedService<ReminderWorker>();
 
+            services.AddHostedService<RecurrenceWorker>();
+
             return services;
         }
     }
