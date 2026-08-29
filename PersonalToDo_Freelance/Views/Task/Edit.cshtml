@@ -42,9 +42,9 @@
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-                <!-- Category & Priority Row -->
+                <!-- Category, Priority & Status Row -->
                 <div class="row g-3 mb-3">
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
                         <label asp-for="CategoryId" class="form-label small fw-semibold text-muted">Category</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-tag"></i></span>
@@ -62,7 +62,7 @@
                         <span asp-validation-for="CategoryId" class="text-danger small"></span>
                     </div>
 
-                    <div class="col-12 col-md-6">
+                    <div class="col-12 col-md-4">
                         <label asp-for="Priority" class="form-label small fw-semibold text-muted">Priority</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-flag"></i></span>
@@ -71,6 +71,19 @@
                                 {
                                     <option value="@((int)p)" selected="@(Model.Priority == (PersonalToDo_Freelance.Domain.Enums.TaskPriority)p ? "selected" : null)">@p</option>
                                 }
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-12 col-md-4">
+                        <label asp-for="Status" class="form-label small fw-semibold text-muted">Status</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-check2-circle"></i></span>
+                            <select asp-for="Status" class="form-select">
+                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.NotStarted)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.NotStarted ? "selected" : null)">Not Started</option>
+                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress ? "selected" : null)">In Progress</option>
+                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed ? "selected" : null)">Completed</option>
+                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled ? "selected" : null)">Cancelled</option>
                             </select>
                         </div>
                     </div>
