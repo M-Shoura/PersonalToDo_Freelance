@@ -22,10 +22,11 @@ namespace PersonalToDo_Freelance
 
 
 
-            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-                                   ?? "Server=(localdb)\\mssqllocaldb;Database=PersonalToDoDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection"); 
+                                  
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-                options.UseSqlServer(connectionString));
+                options.UseSqlServer(connectionString, sqlOptions => 
+                    sqlOptions.EnableRetryOnFailure()));
 
 
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>

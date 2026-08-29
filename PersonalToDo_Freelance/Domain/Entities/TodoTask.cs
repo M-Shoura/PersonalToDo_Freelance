@@ -29,6 +29,8 @@ namespace PersonalToDo_Freelance.Domain.Entities
 
         public DateTime? CompletedAt { get; set; }
 
+        public DateTime? ReminderSentAt { get; set; }
+
         public bool IsDeleted { get; set; }
 
         public RecurrenceRule? RecurrenceRule { get; set; }
