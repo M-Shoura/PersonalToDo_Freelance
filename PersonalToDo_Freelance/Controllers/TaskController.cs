@@ -12,12 +12,14 @@ namespace PersonalToDo_Freelance.Controllers
         private readonly ITaskService _taskService;
         private readonly ICategoryService _categoryService;
         private readonly ITaskOccurrenceService _occurrenceService;
+        private readonly IAttachmentService _attachmentService;
 
-        public TaskController(ITaskService taskService, ICategoryService categoryService, ITaskOccurrenceService occurrenceService)
+        public TaskController(ITaskService taskService, ICategoryService categoryService, ITaskOccurrenceService occurrenceService, IAttachmentService attachmentService)
         {
             _taskService = taskService;
             _categoryService = categoryService;
             _occurrenceService = occurrenceService;
+            _attachmentService = attachmentService;
         }
 
         [HttpGet]
@@ -205,6 +207,28 @@ namespace PersonalToDo_Freelance.Controllers
         {
             var (succeeded, error) = await _occurrenceService.RescheduleAsync(occurrenceId, scheduledDate);
             if (!succeeded) TempData["Error"] = error;
+            return RedirectToAction("Details", new { id = taskId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadAttachment(long taskId, Microsoft.AspNetCore.Http.IFormFile file)
+        {
+            var (succeeded, error, attachment) = await _attachmentService.UploadAttachmentAsync(taskId, file);
+            if (!succeeded) TempData["Error"] = error;
+            else TempData["Message"] = "File uploaded successfully.";
+            
+            return RedirectToAction("Details", new { id = taskId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAttachment(long attachmentId, long taskId)
+        {
+            var (succeeded, error) = await _attachmentService.DeleteAttachmentAsync(attachmentId);
+            if (!succeeded) TempData["Error"] = error;
+            else TempData["Message"] = "File deleted successfully.";
+
             return RedirectToAction("Details", new { id = taskId });
         }
     }
