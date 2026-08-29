@@ -102,6 +102,11 @@
                                 </a>
                             </li>
                             <li class="nav-item">
+                                <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" && ViewContext.RouteData.Values["action"]?.ToString() == "Kanban" ? "active fw-semibold" : "")" asp-controller="Dashboard" asp-action="Kanban">
+                                    <i class="bi bi-kanban-fill me-1 opacity-75"></i> Kanban
+                                </a>
+                            </li>
+                            <li class="nav-item">
                                 <a class="nav-link px-3 @(ViewContext.RouteData.Values["controller"]?.ToString() == "Category" ? "active fw-semibold" : "")" asp-controller="Category" asp-action="Index">
                                     <i class="bi bi-tags-fill me-1 opacity-75"></i> Categories
                                 </a>

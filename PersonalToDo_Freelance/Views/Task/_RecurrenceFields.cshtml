@@ -36,8 +36,8 @@
             <div class="col-6 col-md-4">
                 <label asp-for="Interval" class="form-label small fw-semibold text-muted">Every</label>
                 <div class="input-group">
-                    <input asp-for="Interval" class="form-control" type="number" min="1" />
-                    <span class="input-group-text small text-muted">time(s)</span>
+                    <input asp-for="Interval" class="form-control" type="number" min="1" id="recurrenceIntervalInput" />
+                    <span class="input-group-text small text-muted" id="intervalUnitLabel">week(s)</span>
                 </div>
                 <span asp-validation-for="Interval" class="text-danger small"></span>
             </div>
@@ -52,34 +52,54 @@
             </div>
         </div>
 
+        <!-- Weekly Days-of-Week Checkbox Section -->
         <input asp-for="DaysOfWeek" type="hidden" id="Recurrence_DaysOfWeek" />
-        <div class="mt-3">
-            <label class="form-label small fw-semibold text-muted d-block">Repeats on Days</label>
+        <div class="mt-3 p-3 rounded-3" id="daysOfWeekSection" style="background: var(--tp-surface-card); border: 1px solid var(--tp-border-color);">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <label class="form-label small fw-semibold text-muted mb-0">
+                    <i class="bi bi-calendar-week text-primary me-1"></i> Repeat on Days
+                </label>
+                <span class="badge bg-primary-subtle text-primary small fw-normal">Select 1 or more days</span>
+            </div>
             <div class="d-flex flex-wrap gap-2">
-                @foreach (var day in new[] { DaysOfWeekFlags.Sunday, DaysOfWeekFlags.Monday, DaysOfWeekFlags.Tuesday, DaysOfWeekFlags.Wednesday, DaysOfWeekFlags.Thursday, DaysOfWeekFlags.Friday, DaysOfWeekFlags.Saturday })
+                @foreach (var day in new[] { 
+                    (Flag: DaysOfWeekFlags.Saturday, Short: "Sat", Full: "Saturday"),
+                    (Flag: DaysOfWeekFlags.Sunday, Short: "Sun", Full: "Sunday"),
+                    (Flag: DaysOfWeekFlags.Monday, Short: "Mon", Full: "Monday"),
+                    (Flag: DaysOfWeekFlags.Tuesday, Short: "Tue", Full: "Tuesday"),
+                    (Flag: DaysOfWeekFlags.Wednesday, Short: "Wed", Full: "Wednesday"),
+                    (Flag: DaysOfWeekFlags.Thursday, Short: "Thu", Full: "Thursday"),
+                    (Flag: DaysOfWeekFlags.Friday, Short: "Fri", Full: "Friday")
+                })
                 {
-                    var selected = Model.DaysOfWeek.HasFlag(day);
-                    var shortName = day.ToString().Substring(0, 3);
+                    var selected = Model.DaysOfWeek.HasFlag(day.Flag);
                     <div>
-                        <input class="weekday-pill-input recurrence-weekday" type="checkbox" id="day_@day" value="@((int)day)" checked="@selected" />
-                        <label class="weekday-pill-label" for="day_@day" title="@day">@shortName</label>
+                        <input class="weekday-pill-input recurrence-weekday" type="checkbox" id="day_@day.Flag" value="@((int)day.Flag)" data-name="@day.Full" checked="@selected" />
+                        <label class="weekday-pill-label" for="day_@day.Flag" title="@day.Full">@day.Short</label>
                     </div>
                 }
             </div>
-            <span asp-validation-for="DaysOfWeek" class="text-danger small"></span>
+            <span asp-validation-for="DaysOfWeek" class="text-danger small mt-1 d-block"></span>
         </div>
 
+        <!-- End Date & Max Count Rows -->
         <div class="row g-3 mt-1">
-            <div class="col-12 col-md-6" id="endDateWrapper">
+            <div class="col-12 col-md-6" id="endDateWrapper" style="display:none;">
                 <label asp-for="EndDate" class="form-label small fw-semibold text-muted">End Date</label>
-                <input asp-for="EndDate" class="form-control" type="date" />
+                <input asp-for="EndDate" class="form-control" type="date" id="recurrenceEndDateInput" />
                 <span asp-validation-for="EndDate" class="text-danger small"></span>
             </div>
-            <div class="col-12 col-md-6" id="occurrenceCountWrapper">
+            <div class="col-12 col-md-6" id="occurrenceCountWrapper" style="display:none;">
                 <label asp-for="OccurrenceCount" class="form-label small fw-semibold text-muted">Max Occurrences</label>
-                <input asp-for="OccurrenceCount" class="form-control" type="number" min="1" />
+                <input asp-for="OccurrenceCount" class="form-control" type="number" min="1" id="recurrenceCountInput" />
                 <span asp-validation-for="OccurrenceCount" class="text-danger small"></span>
             </div>
+        </div>
+
+        <!-- Live Schedule Summary -->
+        <div class="mt-3 p-2 px-3 rounded-pill d-inline-flex align-items-center gap-2 small" id="scheduleSummaryBox" style="background: var(--tp-primary-light); color: var(--tp-primary); border: 1px solid var(--tp-primary-border);">
+            <i class="bi bi-info-circle-fill"></i>
+            <span id="scheduleSummaryText" class="fw-medium">Repeats weekly on selected days</span>
         </div>
     </div>
 </div>
@@ -88,27 +108,108 @@
     (() => {
         const toggle = document.getElementById('isRecurringToggle');
         const options = document.getElementById('recurrenceOptions');
-        const hidden = document.getElementById('Recurrence_DaysOfWeek');
+        const typeSelect = document.getElementById('recurrenceTypeSelect');
+        const intervalInput = document.getElementById('recurrenceIntervalInput');
+        const intervalLabel = document.getElementById('intervalUnitLabel');
+        const endConditionSelect = document.getElementById('recurrenceEndCondition');
+        const endDateWrapper = document.getElementById('endDateWrapper');
+        const occurrenceCountWrapper = document.getElementById('occurrenceCountWrapper');
+        const daysSection = document.getElementById('daysOfWeekSection');
+        const hidden = document.getElementById('Recurrence_DaysOfWeek') || document.querySelector('[name$="DaysOfWeek"]');
         const boxes = document.querySelectorAll('.recurrence-weekday');
+        const summaryText = document.getElementById('scheduleSummaryText');
 
-        if (toggle && options) {
-            toggle.addEventListener('change', () => {
+        function updateVisibility() {
+            if (toggle && options) {
                 options.style.display = toggle.checked ? 'block' : 'none';
-            });
+            }
+
+            if (!toggle || !toggle.checked) return;
+
+            const type = typeSelect ? typeSelect.value : '0';
+            // Show weekdays only for Weekly (2) or Custom (5)
+            if (daysSection) {
+                daysSection.style.display = (type === '2' || type === '5') ? 'block' : 'none';
+            }
+
+            if (intervalLabel) {
+                switch(type) {
+                    case '1': intervalLabel.textContent = 'day(s)'; break;
+                    case '2': intervalLabel.textContent = 'week(s)'; break;
+                    case '3': intervalLabel.textContent = 'month(s)'; break;
+                    case '4': intervalLabel.textContent = 'year(s)'; break;
+                    default: intervalLabel.textContent = 'time(s)'; break;
+                }
+            }
+
+            const endCond = endConditionSelect ? endConditionSelect.value : '0';
+            if (endDateWrapper) endDateWrapper.style.display = (endCond === '1') ? 'block' : 'none';
+            if (occurrenceCountWrapper) occurrenceCountWrapper.style.display = (endCond === '2') ? 'block' : 'none';
+
+            updateSummary();
         }
 
-        const updateDays = () => {
+        function updateDays() {
             if (!hidden) return;
             let value = 0;
+            const selectedNames = [];
             boxes.forEach(box => {
-                if (box.checked) value |= Number(box.value);
+                if (box.checked) {
+                    value |= Number(box.value);
+                    selectedNames.push(box.getAttribute('data-name') || box.value);
+                }
             });
             hidden.value = value;
-        };
+            updateSummary(selectedNames);
+        }
+
+        function updateSummary(selectedDays) {
+            if (!summaryText) return;
+            const type = typeSelect ? typeSelect.options[typeSelect.selectedIndex].text : 'None';
+            const interval = intervalInput ? (intervalInput.value || '1') : '1';
+            
+            if (!selectedDays) {
+                selectedDays = [];
+                boxes.forEach(box => {
+                    if (box.checked) selectedDays.push(box.getAttribute('data-name') || box.value);
+                });
+            }
+
+            let text = `Repeats every ${interval > 1 ? interval + ' ' : ''}${type.toLowerCase()}`;
+            if (type.toLowerCase() === 'weekly') {
+                if (selectedDays.length > 0) {
+                    text += ` on ${selectedDays.join(', ')}`;
+                } else {
+                    text += ` (select at least one day)`;
+                }
+            }
+
+            const endCond = endConditionSelect ? endConditionSelect.value : '0';
+            if (endCond === '1') {
+                const endVal = document.getElementById('recurrenceEndDateInput')?.value;
+                if (endVal) text += ` until ${endVal}`;
+            } else if (endCond === '2') {
+                const countVal = document.getElementById('recurrenceCountInput')?.value;
+                if (countVal) text += ` for ${countVal} occurrence(s)`;
+            }
+
+            summaryText.textContent = text;
+        }
+
+        if (toggle) toggle.addEventListener('change', updateVisibility);
+        if (typeSelect) typeSelect.addEventListener('change', updateVisibility);
+        if (intervalInput) intervalInput.addEventListener('input', updateVisibility);
+        if (endConditionSelect) endConditionSelect.addEventListener('change', updateVisibility);
+        document.getElementById('recurrenceEndDateInput')?.addEventListener('change', updateVisibility);
+        document.getElementById('recurrenceCountInput')?.addEventListener('input', updateVisibility);
 
         boxes.forEach(box => box.addEventListener('change', updateDays));
+
+        // Initial setup
+        updateVisibility();
         updateDays();
     })();
 </script>
+
 
 

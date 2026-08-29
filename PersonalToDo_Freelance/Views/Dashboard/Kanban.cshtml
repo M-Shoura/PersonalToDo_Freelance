@@ -1,0 +1,244 @@
+@model IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.TaskListItemViewModel>
+@using PersonalToDo_Freelance.Domain.Enums
+@{
+    ViewData["Title"] = "Kanban Board";
+    var q = ViewData["Query"] as PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters ?? new PersonalToDo_Freelance.Application.ViewModels.TaskQueryParameters();
+    var cats = ViewData["Categories"] as IReadOnlyList<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel> ?? Array.Empty<PersonalToDo_Freelance.Application.ViewModels.CategoryListItemViewModel>();
+
+    var notStartedTasks = Model.Where(t => t.Status == TodoTaskStatus.NotStarted).ToList();
+    var inProgressTasks = Model.Where(t => t.Status == TodoTaskStatus.InProgress).ToList();
+    var completedTasks = Model.Where(t => t.Status == TodoTaskStatus.Completed).ToList();
+    var cancelledTasks = Model.Where(t => t.Status == TodoTaskStatus.Cancelled).ToList();
+}
+
+<!-- Anti-Forgery Form for AJAX Operations -->
+<form id="__antiForgeryForm" style="display:none;">
+    @Html.AntiForgeryToken()
+</form>
+
+<!-- Page Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+    <div>
+        <h2 class="fw-bold mb-1">Kanban Board</h2>
+        <p class="text-muted mb-0 small">
+            <i class="bi bi-arrows-move me-1 text-primary"></i> Drag and drop tasks between columns to update their status in real time
+        </p>
+    </div>
+    <div class="d-flex flex-wrap align-items-center gap-2">
+        <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm d-inline-flex align-items-center">
+            <i class="bi bi-plus-lg me-1"></i> Add Task
+        </a>
+    </div>
+</div>
+
+<!-- Tabs Navigation -->
+<ul class="nav tp-nav-tabs mb-4">
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Dashboard" asp-action="Index">
+            <i class="bi bi-calendar2-day-fill"></i> Today's Tasks
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Dashboard" asp-action="All">
+            <i class="bi bi-collection-fill"></i> All Tasks
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link active" asp-controller="Dashboard" asp-action="Kanban">
+            <i class="bi bi-kanban-fill"></i> Kanban Board
+            <span class="badge bg-primary rounded-pill ms-1">@Model.Count</span>
+        </a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" asp-controller="Dashboard" asp-action="Statistics">
+            <i class="bi bi-bar-chart-fill"></i> Productivity Stats
+        </a>
+    </li>
+</ul>
+
+<!-- Filter & Search Bar -->
+<div class="tp-card p-3 mb-4">
+    <form method="get" class="row g-2 align-items-center">
+        <!-- Search Term -->
+        <div class="col-12 col-md-4 col-lg-3">
+            <div class="input-group input-group-sm">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="text" name="SearchTerm" class="form-control" placeholder="Search tasks..." value="@q.SearchTerm" />
+            </div>
+        </div>
+
+        <!-- Category Filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <select name="CategoryId" class="form-select form-select-sm">
+                <option value="">All Categories</option>
+                @foreach (var cat in cats)
+                {
+                    <option value="@cat.Id" selected="@(q.CategoryId == cat.Id ? "selected" : null)">@cat.Name</option>
+                }
+            </select>
+        </div>
+
+        <!-- Priority Filter -->
+        <div class="col-6 col-md-3 col-lg-2">
+            <select name="Priority" class="form-select form-select-sm">
+                <option value="">All Priorities</option>
+                @foreach (var p in Enum.GetValues(typeof(TaskPriority)))
+                {
+                    <option value="@((int)p)" selected="@(q.Priority == (TaskPriority)p ? "selected" : null)">@p</option>
+                }
+            </select>
+        </div>
+
+        <!-- Date Range Filter -->
+        <div class="col-8 col-md-4 col-lg-3">
+            <select name="DateFilter" class="form-select form-select-sm">
+                <option value="0" selected="@(q.DateFilter == PersonalToDo_Freelance.Application.ViewModels.DateRangeFilter.None ? "selected" : null)">Any Date</option>
+                <option value="1" selected="@(q.DateFilter == PersonalToDo_Freelance.Application.ViewModels.DateRangeFilter.Today ? "selected" : null)">Due Today</option>
+                <option value="2" selected="@(q.DateFilter == PersonalToDo_Freelance.Application.ViewModels.DateRangeFilter.Tomorrow ? "selected" : null)">Due Tomorrow</option>
+                <option value="3" selected="@(q.DateFilter == PersonalToDo_Freelance.Application.ViewModels.DateRangeFilter.ThisWeek ? "selected" : null)">Due This Week</option>
+                <option value="4" selected="@(q.DateFilter == PersonalToDo_Freelance.Application.ViewModels.DateRangeFilter.ThisMonth ? "selected" : null)">Due This Month</option>
+            </select>
+        </div>
+
+        <!-- Submit & Reset -->
+        <div class="col-4 col-md-2 col-lg-2 d-flex gap-1 justify-content-end">
+            <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3 flex-fill">
+                <i class="bi bi-funnel-fill me-1"></i> Filter
+            </button>
+            <a asp-action="Kanban" class="btn btn-outline-secondary btn-sm rounded-pill px-2" title="Reset Filters">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </form>
+</div>
+
+<!-- Kanban Board Columns Grid -->
+<div class="kanban-board-container pb-4">
+    <div class="row g-3 g-xl-4 kanban-scroll-wrapper">
+        
+        <!-- 1. NOT STARTED (TO DO) COLUMN -->
+        <div class="col-12 col-md-6 col-xl-3 kanban-col-wrapper">
+            <div class="kanban-column" data-status="@((int)TodoTaskStatus.NotStarted)">
+                <div class="kanban-column-header kanban-header-todo d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="kanban-dot dot-todo"></span>
+                        <h6 class="fw-bold mb-0">To Do</h6>
+                    </div>
+                    <span class="badge rounded-pill kanban-count" id="count-0">@notStartedTasks.Count</span>
+                </div>
+
+                <div class="kanban-card-list" data-status="@((int)TodoTaskStatus.NotStarted)">
+                    @if (!notStartedTasks.Any())
+                    {
+                        <div class="kanban-empty-state">
+                            <i class="bi bi-inbox text-muted fs-3 mb-1"></i>
+                            <p class="small text-muted mb-0">No tasks to do</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in notStartedTasks)
+                        {
+                            <partial name="_KanbanCard" model="task" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. IN PROGRESS COLUMN -->
+        <div class="col-12 col-md-6 col-xl-3 kanban-col-wrapper">
+            <div class="kanban-column" data-status="@((int)TodoTaskStatus.InProgress)">
+                <div class="kanban-column-header kanban-header-progress d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="kanban-dot dot-progress"></span>
+                        <h6 class="fw-bold mb-0">In Progress</h6>
+                    </div>
+                    <span class="badge rounded-pill kanban-count" id="count-1">@inProgressTasks.Count</span>
+                </div>
+
+                <div class="kanban-card-list" data-status="@((int)TodoTaskStatus.InProgress)">
+                    @if (!inProgressTasks.Any())
+                    {
+                        <div class="kanban-empty-state">
+                            <i class="bi bi-lightning text-muted fs-3 mb-1"></i>
+                            <p class="small text-muted mb-0">No tasks in progress</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in inProgressTasks)
+                        {
+                            <partial name="_KanbanCard" model="task" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. COMPLETED (DONE) COLUMN -->
+        <div class="col-12 col-md-6 col-xl-3 kanban-col-wrapper">
+            <div class="kanban-column" data-status="@((int)TodoTaskStatus.Completed)">
+                <div class="kanban-column-header kanban-header-done d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="kanban-dot dot-done"></span>
+                        <h6 class="fw-bold mb-0">Done</h6>
+                    </div>
+                    <span class="badge rounded-pill kanban-count" id="count-2">@completedTasks.Count</span>
+                </div>
+
+                <div class="kanban-card-list" data-status="@((int)TodoTaskStatus.Completed)">
+                    @if (!completedTasks.Any())
+                    {
+                        <div class="kanban-empty-state">
+                            <i class="bi bi-check2-all text-muted fs-3 mb-1"></i>
+                            <p class="small text-muted mb-0">No completed tasks</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in completedTasks)
+                        {
+                            <partial name="_KanbanCard" model="task" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. CANCELLED COLUMN -->
+        <div class="col-12 col-md-6 col-xl-3 kanban-col-wrapper">
+            <div class="kanban-column" data-status="@((int)TodoTaskStatus.Cancelled)">
+                <div class="kanban-column-header kanban-header-cancelled d-flex align-items-center justify-content-between mb-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="kanban-dot dot-cancelled"></span>
+                        <h6 class="fw-bold mb-0">Cancelled</h6>
+                    </div>
+                    <span class="badge rounded-pill kanban-count" id="count-3">@cancelledTasks.Count</span>
+                </div>
+
+                <div class="kanban-card-list" data-status="@((int)TodoTaskStatus.Cancelled)">
+                    @if (!cancelledTasks.Any())
+                    {
+                        <div class="kanban-empty-state">
+                            <i class="bi bi-x-circle text-muted fs-3 mb-1"></i>
+                            <p class="small text-muted mb-0">No cancelled tasks</p>
+                        </div>
+                    }
+                    else
+                    {
+                        @foreach (var task in cancelledTasks)
+                        {
+                            <partial name="_KanbanCard" model="task" />
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/kanban.js" asp-append-version="true"></script>
+}
