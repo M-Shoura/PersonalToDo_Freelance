@@ -21,7 +21,26 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         [Range(1, 999)]
         public int Interval { get; set; } = 1;
 
-        public DaysOfWeekFlags DaysOfWeek { get; set; } = DaysOfWeekFlags.None;
+        private DaysOfWeekFlags _daysOfWeek = DaysOfWeekFlags.None;
+        public DaysOfWeekFlags DaysOfWeek
+        {
+            get
+            {
+                if (SelectedDays != null && SelectedDays.Count > 0)
+                {
+                    DaysOfWeekFlags flags = DaysOfWeekFlags.None;
+                    foreach (var d in SelectedDays) flags |= d;
+                    return flags;
+                }
+                return _daysOfWeek;
+            }
+            set
+            {
+                _daysOfWeek = value;
+            }
+        }
+
+        public List<DaysOfWeekFlags> SelectedDays { get; set; } = new();
 
         public RecurrenceEndCondition EndCondition { get; set; } = RecurrenceEndCondition.Never;
 

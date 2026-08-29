@@ -482,7 +482,11 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 DaysOfWeek = rule.DaysOfWeek,
                 EndCondition = endCondition,
                 EndDate = rule.EndDate,
-                OccurrenceCount = rule.OccurrenceCount
+                OccurrenceCount = rule.OccurrenceCount,
+                SelectedDays = Enum.GetValues(typeof(DaysOfWeekFlags))
+                    .Cast<DaysOfWeekFlags>()
+                    .Where(d => d != DaysOfWeekFlags.None && d != DaysOfWeekFlags.All && rule.DaysOfWeek.HasFlag(d))
+                    .ToList()
             };
         }
 

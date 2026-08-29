@@ -72,9 +72,9 @@
                     (Flag: DaysOfWeekFlags.Friday, Short: "Fri", Full: "Friday")
                 })
                 {
-                    var selected = Model.DaysOfWeek.HasFlag(day.Flag);
+                    var isChecked = Model?.SelectedDays?.Contains(day.Flag) == true || (Model != null && Model.DaysOfWeek.HasFlag(day.Flag));
                     <div>
-                        <input class="weekday-pill-input recurrence-weekday" type="checkbox" id="day_@day.Flag" value="@((int)day.Flag)" data-name="@day.Full" checked="@selected" />
+                        <input class="weekday-pill-input recurrence-weekday" type="checkbox" name="Recurrence.SelectedDays" id="day_@day.Flag" value="@day.Flag" data-flag="@((int)day.Flag)" data-name="@day.Full" @(isChecked ? "checked" : "") />
                         <label class="weekday-pill-label" for="day_@day.Flag" title="@day.Full">@day.Short</label>
                     </div>
                 }
@@ -155,7 +155,8 @@
             const selectedNames = [];
             boxes.forEach(box => {
                 if (box.checked) {
-                    value |= Number(box.value);
+                    const flagVal = Number(box.getAttribute('data-flag') || box.value);
+                    if (!isNaN(flagVal)) value |= flagVal;
                     selectedNames.push(box.getAttribute('data-name') || box.value);
                 }
             });

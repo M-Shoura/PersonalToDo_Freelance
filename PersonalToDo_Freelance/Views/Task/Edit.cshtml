@@ -79,13 +79,10 @@
                         <label asp-for="Status" class="form-label small fw-semibold text-muted">Status</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-check2-circle"></i></span>
-                            <select asp-for="Status" class="form-select">
-                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.NotStarted)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.NotStarted ? "selected" : null)">Not Started</option>
-                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.InProgress ? "selected" : null)">In Progress</option>
-                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Completed ? "selected" : null)">Completed</option>
-                                <option value="@((int)PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled)" selected="@(Model.Status == PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus.Cancelled ? "selected" : null)">Cancelled</option>
+                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>()">
                             </select>
                         </div>
+                        <span asp-validation-for="Status" class="text-danger small"></span>
                     </div>
                 </div>
 
