@@ -6,6 +6,7 @@ namespace PersonalToDo_Freelance.Application.Interfaces
     public interface ITaskOccurrenceService
     {
         Task<IReadOnlyList<TaskOccurrenceViewModel>> GenerateForTaskAsync(long taskId, DateTime windowEndDate);
+        Task<IReadOnlyList<TaskOccurrenceViewModel>> GenerateForTaskSystemAsync(long taskId, string userId, DateTime windowEndDate);
         Task<IReadOnlyList<TaskOccurrenceViewModel>> GetForTaskAsync(long taskId);
         Task<TaskOccurrenceViewModel?> GetDetailsAsync(long occurrenceId);
         Task<(bool Succeeded, string? Error)> ChangeStatusAsync(long occurrenceId, OccurrenceStatus status);
