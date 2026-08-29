@@ -34,5 +34,7 @@ namespace PersonalToDo_Freelance.Domain.Entities
         public RecurrenceRule? RecurrenceRule { get; set; }
 
         public ICollection<TaskOccurrence> Occurrences { get; set; } = new List<TaskOccurrence>();
+
+        public ICollection<TaskAttachment> Attachments { get; set; } = new List<TaskAttachment>();
     }
 }
