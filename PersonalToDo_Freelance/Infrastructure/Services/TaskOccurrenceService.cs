@@ -23,6 +23,11 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
         public async Task<IReadOnlyList<TaskOccurrenceViewModel>> GenerateForTaskAsync(long taskId, DateTime windowEndDate)
         {
             var userId = _user.UserId ?? string.Empty;
+            return await GenerateForTaskSystemAsync(taskId, userId, windowEndDate);
+        }
+
+        public async Task<IReadOnlyList<TaskOccurrenceViewModel>> GenerateForTaskSystemAsync(long taskId, string userId, DateTime windowEndDate)
+        {
             var task = await _db.Tasks
                 .Include(t => t.RecurrenceRule)
                 .Where(t => t.Id == taskId && t.UserId == userId && !t.IsDeleted)
@@ -62,7 +67,29 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             }
 
             await _db.SaveChangesAsync();
-            return await GetForTaskAsync(taskId);
+            return await GetForTaskSystemAsync(taskId, userId);
+        }
+
+        private async Task<IReadOnlyList<TaskOccurrenceViewModel>> GetForTaskSystemAsync(long taskId, string userId)
+        {
+            return await _db.TaskOccurrences.AsNoTracking()
+                .Include(o => o.TodoTask)
+                .Where(o => o.TodoTaskId == taskId && o.TodoTask != null && o.TodoTask.UserId == userId && !o.TodoTask.IsDeleted && !o.IsDeleted)
+                .OrderBy(o => o.OccurrenceDate)
+                .Select(o => new TaskOccurrenceViewModel
+                {
+                    Id = o.Id,
+                    TodoTaskId = o.TodoTaskId,
+                    RecurrenceRuleId = o.RecurrenceRuleId,
+                    TaskTitle = o.TodoTask!.Title,
+                    ScheduledDate = o.OccurrenceDate,
+                    OriginalScheduledDate = (o.OriginalOccurrenceDate ?? o.OccurrenceDate).Date,
+                    Status = o.Status,
+                    CompletedAt = o.CompletedAt,
+                    CreatedAt = o.CreatedAt,
+                    UpdatedAt = o.UpdatedAt
+                })
+                .ToListAsync();
         }
 
         public async Task<IReadOnlyList<TaskOccurrenceViewModel>> GetForTaskAsync(long taskId)
