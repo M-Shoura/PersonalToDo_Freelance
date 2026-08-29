@@ -6,18 +6,18 @@
 <div class="row justify-content-center">
     <div class="col-12 col-md-7 col-lg-6">
         <div class="mb-3">
-            <a asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 hover-dark">
+            <a asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1">
                 <i class="bi bi-arrow-left"></i> Back to Categories
             </a>
         </div>
 
-        <div class="tp-card p-4 p-md-5">
+        <div class="tp-card p-3 p-md-5">
             <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
                 <div class="stat-icon stat-icon-primary rounded-circle" style="width: 48px; height: 48px; font-size: 1.25rem;">
                     <i class="bi bi-tag-fill"></i>
                 </div>
                 <div>
-                    <h3 class="fw-bold text-dark mb-0">New Category</h3>
+                    <h3 class="fw-bold mb-0">New Category</h3>
                     <p class="text-muted small mb-0">Create a label to organize and group tasks</p>
                 </div>
             </div>
@@ -37,8 +37,8 @@
                     <span asp-validation-for="Description" class="text-danger small"></span>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
-                    <a asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium text-secondary">Cancel</a>
+                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 fw-medium">Cancel</a>
                     <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm d-inline-flex align-items-center">
                         <i class="bi bi-check-lg me-1"></i> Save Category
                     </button>
@@ -51,4 +51,5 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
 

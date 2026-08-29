@@ -8,7 +8,7 @@
 <!-- Page Header -->
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
     <div>
-        <h2 class="fw-bold text-dark mb-1">Productivity Analytics</h2>
+        <h2 class="fw-bold mb-1">Productivity Analytics</h2>
         <p class="text-muted mb-0 small">
             <i class="bi bi-graph-up-arrow me-1 text-primary"></i> Track your task completion trends and performance
         </p>
@@ -36,7 +36,7 @@
 
 <!-- Filter & Date Range Card -->
 <div class="filter-card mb-4">
-    <form method="get" class="row g-3 align-items-end" id="statsForm">
+    <form method="get" class="row g-2 align-items-end" id="statsForm">
         <div class="col-12 col-lg-5">
             <label class="form-label text-muted small fw-semibold mb-1">Quick Range Presets</label>
             <div class="btn-group w-100" role="group" aria-label="Presets">
@@ -49,14 +49,14 @@
         <div class="col-6 col-md-4 col-lg-3">
             <label class="form-label text-muted small fw-semibold mb-1" for="startDate">Start Date</label>
             <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white"><i class="bi bi-calendar-range"></i></span>
+                <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
                 <input type="date" name="start" id="startDate" class="form-control" value="@Model.StartDate.ToString("yyyy-MM-dd")" />
             </div>
         </div>
         <div class="col-6 col-md-4 col-lg-3">
             <label class="form-label text-muted small fw-semibold mb-1" for="endDate">End Date</label>
             <div class="input-group input-group-sm">
-                <span class="input-group-text bg-white"><i class="bi bi-calendar-range"></i></span>
+                <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
                 <input type="date" name="end" id="endDate" class="form-control" value="@Model.EndDate.ToString("yyyy-MM-dd")" />
             </div>
         </div>
@@ -67,8 +67,8 @@
 </div>
 
 <!-- Metrics Cards -->
-<div class="row g-3 mb-4">
-    <div class="col-6 col-lg">
+<div class="row g-2 g-md-3 mb-4">
+    <div class="col-6 col-md-4 col-xl">
         <div class="stat-card h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <span class="text-muted small fw-semibold">Created</span>
@@ -76,10 +76,10 @@
                     <i class="bi bi-plus-circle-fill"></i>
                 </div>
             </div>
-            <h3 class="fw-bold mb-0 text-dark">@Model.TasksCreated</h3>
+            <h3 class="fw-bold mb-0">@Model.TasksCreated</h3>
         </div>
     </div>
-    <div class="col-6 col-lg">
+    <div class="col-6 col-md-4 col-xl">
         <div class="stat-card h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <span class="text-muted small fw-semibold">Completed</span>
@@ -90,7 +90,7 @@
             <h3 class="fw-bold mb-0 text-success">@Model.TasksCompleted</h3>
         </div>
     </div>
-    <div class="col-6 col-lg">
+    <div class="col-6 col-md-4 col-xl">
         <div class="stat-card h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <span class="text-muted small fw-semibold">Pending</span>
@@ -101,7 +101,7 @@
             <h3 class="fw-bold mb-0 text-info">@Model.PendingTasks</h3>
         </div>
     </div>
-    <div class="col-6 col-lg">
+    <div class="col-6 col-md-6 col-xl">
         <div class="stat-card h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <span class="text-muted small fw-semibold">Overdue</span>
@@ -109,10 +109,10 @@
                     <i class="bi bi-exclamation-octagon-fill"></i>
                 </div>
             </div>
-            <h3 class="fw-bold mb-0 @(Model.OverdueTasks > 0 ? "text-danger" : "text-dark")">@Model.OverdueTasks</h3>
+            <h3 class="fw-bold mb-0 @(Model.OverdueTasks > 0 ? "text-danger" : "")">@Model.OverdueTasks</h3>
         </div>
     </div>
-    <div class="col-12 col-lg-3">
+    <div class="col-12 col-md-6 col-xl-3">
         <div class="stat-card h-100 d-flex flex-column justify-content-between">
             <div class="d-flex justify-content-between align-items-start mb-2">
                 <span class="text-muted small fw-semibold">Completion Rate</span>
@@ -129,12 +129,12 @@
 </div>
 
 <!-- Charts Grid -->
-<div class="row g-4">
-    <div class="col-12 col-lg-12">
-        <div class="tp-card p-4">
+<div class="row g-3 g-md-4">
+    <div class="col-12">
+        <div class="tp-card p-3 p-md-4">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h5 class="fw-bold text-dark mb-0">Completed Tasks Over Time</h5>
+                    <h5 class="fw-bold mb-0">Completed Tasks Over Time</h5>
                     <small class="text-muted">Daily breakdown of completed tasks in selected period</small>
                 </div>
                 <span class="badge bg-success-subtle text-success px-3 py-2 rounded-pill"><i class="bi bi-graph-up me-1"></i> Activity</span>
@@ -145,10 +145,10 @@
         </div>
     </div>
     <div class="col-12 col-lg-6">
-        <div class="tp-card p-4 h-100">
+        <div class="tp-card p-3 p-md-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h5 class="fw-bold text-dark mb-0">Tasks by Category</h5>
+                    <h5 class="fw-bold mb-0">Tasks by Category</h5>
                     <small class="text-muted">Distribution across categories</small>
                 </div>
                 <span class="badge bg-primary-subtle text-primary px-3 py-2 rounded-pill"><i class="bi bi-tags me-1"></i> Categories</span>
@@ -159,10 +159,10 @@
         </div>
     </div>
     <div class="col-12 col-lg-6">
-        <div class="tp-card p-4 h-100">
+        <div class="tp-card p-3 p-md-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h5 class="fw-bold text-dark mb-0">Tasks by Priority</h5>
+                    <h5 class="fw-bold mb-0">Tasks by Priority</h5>
                     <small class="text-muted">Volume by priority level</small>
                 </div>
                 <span class="badge bg-warning-subtle text-warning px-3 py-2 rounded-pill"><i class="bi bi-flag me-1"></i> Priority</span>

@@ -3,10 +3,10 @@
     ViewData["Title"] = "Reschedule Task";
 }
 
-<div class="row justify-content-center">
+<div class="row justify-content-center py-2">
     <div class="col-12 col-md-6 col-lg-5">
         <div class="mb-3">
-            <a asp-controller="Dashboard" asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1 hover-dark">
+            <a asp-controller="Dashboard" asp-action="Index" class="text-decoration-none text-muted small d-inline-flex align-items-center gap-1">
                 <i class="bi bi-arrow-left"></i> Back to Dashboard
             </a>
         </div>
@@ -16,7 +16,7 @@
                 <div class="stat-icon stat-icon-primary rounded-circle mx-auto mb-3" style="width: 52px; height: 52px; font-size: 1.35rem;">
                     <i class="bi bi-calendar-event"></i>
                 </div>
-                <h4 class="fw-bold text-dark mb-1">Reschedule Task</h4>
+                <h4 class="fw-bold mb-1">Reschedule Task</h4>
                 <p class="text-muted small mb-0">Select a new due date to postpone or reschedule</p>
             </div>
 
@@ -27,7 +27,7 @@
                 <div class="mb-3">
                     <label asp-for="NewDueDate" class="form-label small fw-semibold text-muted">New Due Date</label>
                     <div class="input-group">
-                        <span class="input-group-text bg-white"><i class="bi bi-calendar3"></i></span>
+                        <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
                         <input asp-for="NewDueDate" id="rescheduleDateInput" class="form-control" type="date" />
                     </div>
                     <span asp-validation-for="NewDueDate" class="text-danger small"></span>
@@ -43,8 +43,8 @@
                     </div>
                 </div>
 
-                <div class="d-flex align-items-center justify-content-end gap-2 pt-3 border-top">
-                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-light rounded-pill px-4 fw-medium text-secondary">Cancel</a>
+                <div class="d-flex flex-wrap align-items-center justify-content-end gap-2 pt-3 border-top">
+                    <a asp-controller="Dashboard" asp-action="Index" class="btn btn-outline-secondary rounded-pill px-4 fw-medium">Cancel</a>
                     <button type="submit" class="btn btn-primary rounded-pill px-4 fw-medium shadow-sm">Save New Date</button>
                 </div>
             </form>
@@ -66,4 +66,5 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
 
