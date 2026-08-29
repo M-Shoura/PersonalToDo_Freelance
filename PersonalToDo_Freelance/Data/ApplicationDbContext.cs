@@ -16,6 +16,7 @@ namespace PersonalToDo_Freelance.Data
         public DbSet<TodoTask> Tasks { get; set; } = null!;
         public DbSet<RecurrenceRule> RecurrenceRules { get; set; } = null!;
         public DbSet<TaskOccurrence> TaskOccurrences { get; set; } = null!;
+        public DbSet<TaskAttachment> TaskAttachments { get; set; } = null!;
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -72,6 +73,16 @@ namespace PersonalToDo_Freelance.Data
                 b.HasIndex(x => new { x.TodoTaskId, x.OccurrenceDate });
                 b.HasIndex(x => new { x.TodoTaskId, x.RecurrenceRuleId, x.OriginalOccurrenceDate }).IsUnique();
                 b.HasOne(x => x.RecurrenceRule).WithMany().HasForeignKey(x => x.RecurrenceRuleId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<TaskAttachment>(b =>
+            {
+                b.ToTable("TaskAttachments");
+                b.HasKey(x => x.Id);
+                b.Property(x => x.FileName).IsRequired().HasMaxLength(255);
+                b.Property(x => x.FilePath).IsRequired().HasMaxLength(1000);
+                b.Property(x => x.ContentType).IsRequired().HasMaxLength(100);
+                b.HasOne(x => x.TodoTask).WithMany(t => t.Attachments).HasForeignKey(x => x.TodoTaskId).OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

@@ -17,6 +17,7 @@ namespace PersonalToDo_Freelance.Infrastructure
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<ITaskService, TaskService>();
             services.AddScoped<ITaskOccurrenceService, TaskOccurrenceService>();
+            services.AddScoped<IAttachmentService, AttachmentService>();
             services.AddTransient<IEmailService, SmtpEmailService>();
 
             services.AddHostedService<ReminderWorker>();

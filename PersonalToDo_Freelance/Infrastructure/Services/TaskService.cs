@@ -61,6 +61,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                 .Include(x => x.Category)
                 .Include(x => x.RecurrenceRule)
                 .Include(x => x.Occurrences)
+                .Include(x => x.Attachments)
                 .Where(x => x.Id == id && x.UserId == userId && !x.IsDeleted)
                 .FirstOrDefaultAsync();
             if (t == null) return null;
@@ -96,7 +97,8 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
                         CreatedAt = o.CreatedAt,
                         UpdatedAt = o.UpdatedAt
                     })
-                    .ToList()
+                    .ToList(),
+                Attachments = t.Attachments.Where(a => !a.IsDeleted).OrderByDescending(a => a.UploadedAt).ToList()
             };
         }
 

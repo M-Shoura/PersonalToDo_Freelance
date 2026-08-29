@@ -22,6 +22,7 @@ namespace PersonalToDo_Freelance.Application.ViewModels
         public bool IsOverdue { get; set; }
         public bool IsRecurring { get; set; }
         public IReadOnlyList<TaskOccurrenceViewModel> Occurrences { get; set; } = Array.Empty<TaskOccurrenceViewModel>();
+        public IReadOnlyList<PersonalToDo_Freelance.Domain.Entities.TaskAttachment> Attachments { get; set; } = Array.Empty<PersonalToDo_Freelance.Domain.Entities.TaskAttachment>();
     }
 
     public class TaskEditViewModel : IValidatableObject
