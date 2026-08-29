@@ -4,6 +4,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - PersonalToDo</title>
+    <!-- Prevent Theme Flash (FOUC) -->
+    <script>
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('taskpulse-theme');
+                const systemDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const theme = savedTheme || (systemDark ? 'dark' : 'light');
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {}
+        })();
+    </script>
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -16,19 +28,66 @@
 </head>
 <body>
     <header class="sticky-top">
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm py-2">
+        <nav class="navbar navbar-expand-lg border-bottom shadow-sm py-2">
             <div class="container">
-                <a class="navbar-brand d-flex align-items-center fw-bold text-dark fs-4" asp-area="" asp-controller="Home" asp-action="Index">
+                <a class="navbar-brand d-flex align-items-center fw-bold fs-4" asp-area="" asp-controller="Home" asp-action="Index">
                     <span class="brand-icon-wrapper me-2">
                         <i class="bi bi-check2-square text-white"></i>
                     </span>
                     <span class="brand-text">TaskPulse</span>
                 </a>
-                <button class="navbar-toggler border-0 shadow-none p-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <i class="bi bi-list fs-2 text-dark"></i>
-                </button>
-                <div class="navbar-collapse collapse" id="navbarMain">
+                
+                <div class="d-flex align-items-center gap-2 order-lg-3">
+                    <!-- Theme Switcher Button -->
+                    <button class="theme-toggle-btn" type="button" aria-label="Toggle theme" title="Toggle dark/light mode">
+                        <i class="bi bi-moon-stars-fill theme-icon theme-icon-moon"></i>
+                        <i class="bi bi-sun-fill theme-icon theme-icon-sun"></i>
+                    </button>
+
+                    @if (User?.Identity?.IsAuthenticated == true)
+                    {
+                        <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-medium shadow-sm d-none d-sm-inline-flex align-items-center">
+                            <i class="bi bi-plus-lg me-1"></i> New Task
+                        </a>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm border-0 dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="user-avatar-sm">
+                                    <i class="bi bi-person-fill"></i>
+                                </div>
+                                <span class="d-none d-md-inline small fw-medium text-truncate" style="max-width: 130px;">@(User.Identity?.Name ?? "Account")</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenu">
+                                <li class="px-3 py-2 border-bottom">
+                                    <div class="small text-muted">Signed in as</div>
+                                    <div class="fw-semibold small text-truncate">@User.Identity?.Name</div>
+                                </li>
+                                <li>
+                                    <form asp-controller="Account" asp-action="Logout" method="post" class="dropdown-item p-0">
+                                        <button type="submit" class="dropdown-item py-2 text-danger d-flex align-items-center gap-2">
+                                            <i class="bi bi-box-arrow-right"></i> Logout
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-1 fw-medium d-none d-sm-inline-flex" asp-controller="Account" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Login
+                        </a>
+                        <a class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-medium shadow-sm" asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus me-1"></i> Sign Up
+                        </a>
+                    }
+
+                    <button class="navbar-toggler border-0 shadow-none p-2 ms-1" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain"
+                            aria-expanded="false" aria-label="Toggle navigation">
+                        <i class="bi bi-list fs-2"></i>
+                    </button>
+                </div>
+
+                <div class="navbar-collapse collapse order-lg-2" id="navbarMain">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-3 gap-lg-1">
                         @if (User?.Identity?.IsAuthenticated == true)
                         {
@@ -54,46 +113,6 @@
                             </li>
                         }
                     </ul>
-
-                    <div class="d-flex align-items-center gap-2">
-                        @if (User?.Identity?.IsAuthenticated == true)
-                        {
-                            <a asp-controller="Task" asp-action="Create" class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm d-inline-flex align-items-center">
-                                <i class="bi bi-plus-lg me-1"></i> New Task
-                            </a>
-                            <div class="vr mx-2 text-muted opacity-25 d-none d-lg-block"></div>
-                            <div class="dropdown">
-                                <button class="btn btn-outline-light text-dark border-0 dropdown-toggle d-flex align-items-center gap-2 py-1 px-2 rounded-pill bg-light" type="button" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <div class="user-avatar-sm">
-                                        <i class="bi bi-person-fill"></i>
-                                    </div>
-                                    <span class="d-none d-md-inline small fw-medium text-truncate" style="max-width: 140px;">@(User.Identity?.Name ?? "My Account")</span>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-2" aria-labelledby="userMenu">
-                                    <li class="px-3 py-2 border-bottom">
-                                        <div class="small text-muted">Signed in as</div>
-                                        <div class="fw-semibold small text-truncate">@User.Identity?.Name</div>
-                                    </li>
-                                    <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="dropdown-item p-0">
-                                            <button type="submit" class="dropdown-item py-2 text-danger d-flex align-items-center gap-2">
-                                                <i class="bi bi-box-arrow-right"></i> Logout
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div>
-                        }
-                        else
-                        {
-                            <a class="btn btn-outline-secondary btn-sm rounded-pill px-3 py-2 fw-medium" asp-controller="Account" asp-action="Login">
-                                <i class="bi bi-box-arrow-in-right me-1"></i> Login
-                            </a>
-                            <a class="btn btn-primary btn-sm rounded-pill px-3 py-2 fw-medium shadow-sm" asp-controller="Account" asp-action="Register">
-                                <i class="bi bi-person-plus me-1"></i> Get Started
-                            </a>
-                        }
-                    </div>
                 </div>
             </div>
         </nav>
@@ -136,15 +155,15 @@
         </main>
     </div>
 
-    <footer class="app-footer border-top bg-white py-4 mt-auto">
+    <footer class="app-footer py-4 mt-auto">
         <div class="container d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 text-muted small">
             <div class="d-flex align-items-center gap-2">
                 <span class="fw-semibold text-dark">TaskPulse</span>
                 <span>&copy; @DateTime.UtcNow.Year Personal ToDo Manager</span>
             </div>
             <div class="d-flex gap-3">
-                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted hover-dark">Home</a>
-                <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted hover-dark">Privacy Policy</a>
+                <a asp-controller="Home" asp-action="Index" class="text-decoration-none text-muted">Home</a>
+                <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none text-muted">Privacy Policy</a>
             </div>
         </div>
     </footer>
