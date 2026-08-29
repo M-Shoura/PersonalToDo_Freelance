@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PersonalToDo_Freelance.Data;
 
@@ -11,9 +12,11 @@ using PersonalToDo_Freelance.Data;
 namespace PersonalToDo_Freelance.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260829172532_AddReminderSentAt")]
+    partial class AddReminderSentAt
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -245,54 +248,6 @@ namespace PersonalToDo_Freelance.Data.Migrations
                     b.HasIndex("UserId");
 
                     b.ToTable("RecurrenceRules", (string)null);
-                });
-
-            modelBuilder.Entity("PersonalToDo_Freelance.Domain.Entities.TaskAttachment", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bigint");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("Id"));
-
-                    b.Property<string>("ContentType")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FileName")
-                        .IsRequired()
-                        .HasMaxLength(255)
-                        .HasColumnType("nvarchar(255)");
-
-                    b.Property<string>("FilePath")
-                        .IsRequired()
-                        .HasMaxLength(1000)
-                        .HasColumnType("nvarchar(1000)");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<long>("SizeBytes")
-                        .HasColumnType("bigint");
-
-                    b.Property<long>("TodoTaskId")
-                        .HasColumnType("bigint");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime>("UploadedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("TodoTaskId");
-
-                    b.ToTable("TaskAttachments", (string)null);
                 });
 
             modelBuilder.Entity("PersonalToDo_Freelance.Domain.Entities.TaskOccurrence", b =>
@@ -550,17 +505,6 @@ namespace PersonalToDo_Freelance.Data.Migrations
                     b.Navigation("TodoTask");
                 });
 
-            modelBuilder.Entity("PersonalToDo_Freelance.Domain.Entities.TaskAttachment", b =>
-                {
-                    b.HasOne("PersonalToDo_Freelance.Domain.Entities.TodoTask", "TodoTask")
-                        .WithMany("Attachments")
-                        .HasForeignKey("TodoTaskId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("TodoTask");
-                });
-
             modelBuilder.Entity("PersonalToDo_Freelance.Domain.Entities.TaskOccurrence", b =>
                 {
                     b.HasOne("PersonalToDo_Freelance.Domain.Entities.RecurrenceRule", "RecurrenceRule")
@@ -604,8 +548,6 @@ namespace PersonalToDo_Freelance.Data.Migrations
 
             modelBuilder.Entity("PersonalToDo_Freelance.Domain.Entities.TodoTask", b =>
                 {
-                    b.Navigation("Attachments");
-
                     b.Navigation("Occurrences");
 
                     b.Navigation("RecurrenceRule");

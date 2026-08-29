@@ -1,0 +1,142 @@
+@model PersonalToDo_Freelance.Application.ViewModels.TaskListItemViewModel
+@using PersonalToDo_Freelance.Domain.Enums
+
+@{
+    var priorityClass = Model.Priority switch
+    {
+        TaskPriority.Urgent => "badge-priority-urgent",
+        TaskPriority.High => "badge-priority-high",
+        TaskPriority.Medium => "badge-priority-medium",
+        _ => "badge-priority-low"
+    };
+
+    var isCompleted = Model.Status == TodoTaskStatus.Completed;
+}
+
+<div class="kanban-card tp-card p-3 mb-2 shadow-xs @(Model.IsOverdue ? "kanban-card-overdue" : "") @(isCompleted ? "kanban-card-completed" : "")"
+     draggable="true"
+     data-task-id="@Model.Id"
+     data-status="@((int)Model.Status)"
+     tabindex="0"
+     role="button"
+     aria-label="Task: @Model.Title">
+    
+    <!-- Card Header / Meta Tags -->
+    <div class="d-flex align-items-center justify-content-between gap-1 mb-2">
+        <div class="d-flex align-items-center gap-1 flex-wrap">
+            <span class="drag-handle text-muted" title="Drag to reorder/move">
+                <i class="bi bi-grip-vertical"></i>
+            </span>
+            <span class="badge-priority @priorityClass py-0 px-2 small" style="font-size: 0.7rem;">@Model.Priority</span>
+            @if (!string.IsNullOrEmpty(Model.CategoryName))
+            {
+                <span class="badge bg-secondary-subtle text-secondary py-0 px-2 small" style="font-size: 0.7rem;">
+                    <i class="bi bi-tag-fill me-1"></i>@Model.CategoryName
+                </span>
+            }
+        </div>
+
+        <!-- 3-Dots Quick Action Dropdown -->
+        <div class="dropdown">
+            <button class="btn btn-ghost-secondary btn-sm p-1 rounded-circle kanban-action-btn" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Task actions">
+                <i class="bi bi-three-dots-vertical"></i>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 py-1" style="font-size: 0.85rem;">
+                <li class="dropdown-header small text-muted">Move to status</li>
+                @if (Model.Status != TodoTaskStatus.NotStarted)
+                {
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1" data-action="move-status" data-task-id="@Model.Id" data-target-status="0">
+                            <span class="kanban-dot dot-todo"></span> To Do
+                        </button>
+                    </li>
+                }
+                @if (Model.Status != TodoTaskStatus.InProgress)
+                {
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1" data-action="move-status" data-task-id="@Model.Id" data-target-status="1">
+                            <span class="kanban-dot dot-progress"></span> In Progress
+                        </button>
+                    </li>
+                }
+                @if (Model.Status != TodoTaskStatus.Completed)
+                {
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1" data-action="move-status" data-task-id="@Model.Id" data-target-status="2">
+                            <span class="kanban-dot dot-done"></span> Done
+                        </button>
+                    </li>
+                }
+                @if (Model.Status != TodoTaskStatus.Cancelled)
+                {
+                    <li>
+                        <button type="button" class="dropdown-item d-flex align-items-center gap-2 py-1" data-action="move-status" data-task-id="@Model.Id" data-target-status="3">
+                            <span class="kanban-dot dot-cancelled"></span> Cancelled
+                        </button>
+                    </li>
+                }
+                <li><hr class="dropdown-divider my-1"></li>
+                <li>
+                    <a asp-controller="Task" asp-action="Details" asp-route-id="@Model.Id" class="dropdown-item d-flex align-items-center gap-2 py-1">
+                        <i class="bi bi-eye text-primary"></i> View Details
+                    </a>
+                </li>
+                <li>
+                    <a asp-controller="Task" asp-action="Edit" asp-route-id="@Model.Id" class="dropdown-item d-flex align-items-center gap-2 py-1">
+                        <i class="bi bi-pencil text-warning"></i> Edit Task
+                    </a>
+                </li>
+                @if (!isCompleted && Model.Status != TodoTaskStatus.Cancelled)
+                {
+                    <li>
+                        <a asp-controller="Task" asp-action="Reschedule" asp-route-id="@Model.Id" class="dropdown-item d-flex align-items-center gap-2 py-1">
+                            <i class="bi bi-calendar-event text-info"></i> Reschedule
+                        </a>
+                    </li>
+                }
+                <li>
+                    <a asp-controller="Task" asp-action="Delete" asp-route-id="@Model.Id" class="dropdown-item d-flex align-items-center gap-2 py-1 text-danger" data-confirm="Are you sure you want to delete this task?">
+                        <i class="bi bi-trash"></i> Delete
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Title -->
+    <h6 class="fw-semibold mb-2 kanban-card-title">
+        <a asp-controller="Task" asp-action="Details" asp-route-id="@Model.Id" class="text-decoration-none @(isCompleted ? "text-decoration-line-through text-muted" : "")">
+            @Model.Title
+        </a>
+    </h6>
+
+    <!-- Footer Row: Due Date & Indicators -->
+    <div class="d-flex align-items-center justify-content-between pt-2 border-top border-opacity-10 small">
+        <div>
+            @if (Model.DueDate.HasValue)
+            {
+                <span class="d-inline-flex align-items-center gap-1 @(Model.IsOverdue ? "text-danger fw-semibold" : "text-muted")" style="font-size: 0.78rem;">
+                    <i class="bi @(Model.IsOverdue ? "bi-exclamation-circle-fill" : "bi-calendar3")"></i>
+                    @Model.DueDate.Value.ToString("MMM dd")
+                </span>
+            }
+            else
+            {
+                <span class="text-muted" style="font-size: 0.78rem;">No due date</span>
+            }
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            @if (Model.IsRecurring)
+            {
+                <span class="text-primary" title="Recurring task" style="font-size: 0.85rem;">
+                    <i class="bi bi-repeat"></i>
+                </span>
+            }
+            @if (Model.IsOverdue)
+            {
+                <span class="badge bg-danger text-white py-0 px-1" style="font-size: 0.65rem;">Overdue</span>
+            }
+        </div>
+    </div>
+</div>

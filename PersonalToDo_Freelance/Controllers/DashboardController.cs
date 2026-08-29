@@ -33,6 +33,15 @@ namespace PersonalToDo_Freelance.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> Kanban([FromQuery] Application.ViewModels.TaskQueryParameters? q)
+        {
+            ViewData["Query"] = q ?? new Application.ViewModels.TaskQueryParameters();
+            ViewData["Categories"] = await _categoryService.GetAllAsync();
+            var model = await _taskService.GetUserTasksAsync(q);
+            return View(model);
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Statistics(DateTime? start, DateTime? end)
         {
             var s = start ?? DateTime.UtcNow.Date.AddDays(-30);
