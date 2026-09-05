@@ -15,16 +15,16 @@ namespace PersonalToDo_Freelance.Controllers
             _categoryService = categoryService;
         }
 
-        public async Task<IActionResult> Index([FromQuery] Application.ViewModels.TaskQueryParameters? q)
+        public async Task<IActionResult> Index([FromQuery(Name = "")] Application.ViewModels.TaskQueryParameters? q)
         {
             ViewData["Query"] = q ?? new Application.ViewModels.TaskQueryParameters();
             ViewData["Categories"] = await _categoryService.GetAllAsync();
-            var model = await _taskService.GetDashboardAsync(DateTime.UtcNow.Date);
+            var model = await _taskService.GetDashboardAsync(DateTime.UtcNow.Date, q);
             return View(model);
         }
 
         [HttpGet]
-        public async Task<IActionResult> All([FromQuery] Application.ViewModels.TaskQueryParameters? q)
+        public async Task<IActionResult> All([FromQuery(Name = "")] Application.ViewModels.TaskQueryParameters? q)
         {
             ViewData["Query"] = q ?? new Application.ViewModels.TaskQueryParameters();
             ViewData["Categories"] = await _categoryService.GetAllAsync();
@@ -33,7 +33,7 @@ namespace PersonalToDo_Freelance.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Kanban([FromQuery] Application.ViewModels.TaskQueryParameters? q)
+        public async Task<IActionResult> Kanban([FromQuery(Name = "")] Application.ViewModels.TaskQueryParameters? q)
         {
             ViewData["Query"] = q ?? new Application.ViewModels.TaskQueryParameters();
             ViewData["Categories"] = await _categoryService.GetAllAsync();

@@ -74,7 +74,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Workers
                 if (stoppingToken.IsCancellationRequested) break;
 
                 var subject = $"Reminder: Task '{task.Title}' is due soon!";
-                var body = $"<p>Hi {task.User!.UserName},</p><p>This is a reminder that your task <strong>{task.Title}</strong> is due at {task.DueDate!.Value:f} UTC.</p>";
+                var body = GenerateEmailTemplate(task.User!.UserName ?? "User", task.Title, task.DueDate!.Value, false);
                 
                 await emailService.SendEmailAsync(task.User.Email!, subject, body);
 
@@ -101,7 +101,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Workers
                 if (stoppingToken.IsCancellationRequested) break;
 
                 var subject = $"Reminder: Recurring Task '{occurrence.TodoTask!.Title}' is due soon!";
-                var body = $"<p>Hi {occurrence.TodoTask.User!.UserName},</p><p>This is a reminder that your recurring task <strong>{occurrence.TodoTask.Title}</strong> is scheduled for {occurrence.OccurrenceDate:f} UTC.</p>";
+                var body = GenerateEmailTemplate(occurrence.TodoTask.User!.UserName ?? "User", occurrence.TodoTask.Title, occurrence.OccurrenceDate, true);
                 
                 await emailService.SendEmailAsync(occurrence.TodoTask.User.Email!, subject, body);
 
@@ -114,6 +114,42 @@ namespace PersonalToDo_Freelance.Infrastructure.Workers
                 await db.SaveChangesAsync(stoppingToken);
                 _logger.LogInformation("Sent {Count} email reminders.", count);
             }
+        }
+
+        private string GenerateEmailTemplate(string userName, string taskTitle, DateTime dueDate, bool isRecurring)
+        {
+            var taskType = isRecurring ? "recurring task" : "task";
+            return $@"
+<div style=""font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #f8fafc; padding: 30px; border-radius: 12px;"">
+    <div style=""background-color: #4f46e5; padding: 25px; border-radius: 12px 12px 0 0; text-align: center;"">
+        <h2 style=""color: #ffffff; margin: 0; font-size: 24px; font-weight: 600; letter-spacing: 0.5px;"">TaskPulse Reminder</h2>
+    </div>
+    <div style=""background-color: #ffffff; padding: 40px 30px; border-radius: 0 0 12px 12px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);"">
+        <h3 style=""color: #0f172a; margin-top: 0; font-size: 20px;"">Hello {userName},</h3>
+        <p style=""color: #475569; font-size: 16px; line-height: 1.6; margin-bottom: 25px;"">
+            This is a quick reminder that your {taskType} is due soon! Stay on top of your goals.
+        </p>
+        
+        <div style=""background-color: #f1f5f9; padding: 20px; border-left: 4px solid #4f46e5; border-radius: 0 8px 8px 0; margin: 30px 0;"">
+            <div style=""font-size: 18px; font-weight: bold; color: #0f172a; margin-bottom: 8px;"">{taskTitle}</div>
+            <div style=""color: #64748b; font-size: 14px;"">
+                <span style=""font-weight: 600; color: #475569;"">Due at:</span> {dueDate:f} UTC
+            </div>
+        </div>
+        
+        <p style=""color: #475569; font-size: 16px; line-height: 1.6;"">
+            Head over to your dashboard to mark it as completed or reschedule it if needed.
+        </p>
+        
+        <div style=""text-align: center; margin-top: 40px;"">
+            <a href=""#"" style=""background-color: #4f46e5; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px; display: inline-block; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.3);"">Open Dashboard</a>
+        </div>
+    </div>
+    <div style=""text-align: center; margin-top: 25px; color: #94a3b8; font-size: 13px;"">
+        &copy; {DateTime.UtcNow.Year} TaskPulse. All rights reserved.<br>
+        <span style=""font-size: 11px; margin-top: 10px; display: inline-block;"">You received this email because you have active reminders set.</span>
+    </div>
+</div>";
         }
     }
 }

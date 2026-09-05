@@ -345,7 +345,7 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
             return (true, null, task.Id);
         }
 
-        public async Task<Application.ViewModels.DashboardViewModel> GetDashboardAsync(DateTime? forDate = null)
+        public async Task<Application.ViewModels.DashboardViewModel> GetDashboardAsync(DateTime? forDate = null, Application.ViewModels.TaskQueryParameters? query = null)
         {
             var userId = _user.UserId ?? string.Empty;
             var date = (forDate ?? DateTime.UtcNow).Date;
@@ -361,11 +361,49 @@ namespace PersonalToDo_Freelance.Infrastructure.Services
 
             var overdue = await baseQ.Where(t => t.DueDate.HasValue && t.DueDate.Value < date && t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled).CountAsync();
 
-            var todayTasks = await totalTodayQ
-                .Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled)
+            var todayTasksQ = totalTodayQ.AsQueryable();
+
+            if (query != null)
+            {
+                if (query.Status.HasValue)
+                    todayTasksQ = todayTasksQ.Where(t => t.Status == query.Status.Value);
+                else
+                    todayTasksQ = todayTasksQ.Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled);
+
+                if (query.CategoryId.HasValue)
+                    todayTasksQ = todayTasksQ.Where(t => t.CategoryId == query.CategoryId.Value);
+
+                if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+                {
+                    var sLower = query.SearchTerm.Trim().ToLower();
+                    todayTasksQ = todayTasksQ.Where(t => (t.Title != null && EF.Functions.Like(t.Title.ToLower(), "%" + sLower + "%")) || (t.Description != null && EF.Functions.Like(t.Description.ToLower(), "%" + sLower + "%")));
+                }
+
+                switch (query.SortBy)
+                {
+                    case Application.ViewModels.TaskSortField.DueDate:
+                        todayTasksQ = query.SortDirection == Application.ViewModels.SortDirection.Asc ? todayTasksQ.OrderBy(t => t.DueDate) : todayTasksQ.OrderByDescending(t => t.DueDate);
+                        break;
+                    case Application.ViewModels.TaskSortField.Priority:
+                        todayTasksQ = query.SortDirection == Application.ViewModels.SortDirection.Asc ? todayTasksQ.OrderBy(t => t.Priority) : todayTasksQ.OrderByDescending(t => t.Priority);
+                        break;
+                    case Application.ViewModels.TaskSortField.Title:
+                        todayTasksQ = query.SortDirection == Application.ViewModels.SortDirection.Asc ? todayTasksQ.OrderBy(t => t.Title) : todayTasksQ.OrderByDescending(t => t.Title);
+                        break;
+                    default:
+                        todayTasksQ = todayTasksQ.OrderBy(t => t.DueDate);
+                        break;
+                }
+            }
+            else
+            {
+                todayTasksQ = todayTasksQ.Where(t => t.Status != Domain.Enums.TodoTaskStatus.Completed && t.Status != Domain.Enums.TodoTaskStatus.Cancelled)
+                                       .OrderBy(t => t.DueDate);
+            }
+
+            var todayTasks = await todayTasksQ
                 .Include(t => t.Category)
                 .Include(t => t.RecurrenceRule)
-                .OrderBy(t => t.DueDate)
                 .Select(t => new Application.ViewModels.TaskListItemViewModel
                 {
                     Id = t.Id,

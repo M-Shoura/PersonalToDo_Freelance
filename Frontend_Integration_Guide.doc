@@ -1,0 +1,133 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+    <title>Frontend Integration Guide</title>
+    <style>
+        body { font-family: Calibri, sans-serif; }
+        h1 { color: #2E74B5; }
+        h2 { color: #2E74B5; margin-top: 20px; }
+        h3 { color: #5B9BD5; }
+        pre { background-color: #F2F2F2; padding: 10px; border: 1px solid #D9D9D9; }
+        code { font-family: Consolas, monospace; }
+        .note { font-style: italic; color: #555555; }
+    </style>
+</head>
+<body>
+
+    <h1>Frontend Integration Guide (MVC Views)</h1>
+    <p>This document outlines the necessary changes required in the frontend (MVC Views) to integrate with the newly implemented backend features: Recurrence, Status updates, and File Attachments.</p>
+
+    <hr/>
+
+    <h2>1. Task Status Dropdown</h2>
+    <p>The <code>TodoTaskStatus</code> enum now needs to be exposed in the UI for users to update the status of their tasks.</p>
+
+    <h3>Where to add:</h3>
+    <ul>
+        <li><code>Views/Task/Create.cshtml</code></li>
+        <li><code>Views/Task/Edit.cshtml</code></li>
+    </ul>
+
+    <h3>What to add:</h3>
+    <p>Add a dropdown bound to the <code>Status</code> property using the <code>Html.GetEnumSelectList</code> helper.</p>
+
+    <pre><code>
+&lt;div class="form-group mb-3"&gt;
+    &lt;label asp-for="Status" class="form-label"&gt;&lt;/label&gt;
+    &lt;select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList&lt;PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus&gt;()"&gt;&lt;/select&gt;
+    &lt;span asp-validation-for="Status" class="text-danger"&gt;&lt;/span&gt;
+&lt;/div&gt;
+    </code></pre>
+
+    <hr/>
+
+    <h2>2. Recurrence Days of Week Checkboxes</h2>
+    <p>For Weekly recurrences, the backend uses a bitwise flag <code>DaysOfWeekFlags</code> to determine which days the task occurs on.</p>
+
+    <h3>Where to add:</h3>
+    <ul>
+        <li><code>Views/Task/Create.cshtml</code> (inside the recurrence section)</li>
+        <li><code>Views/Task/Edit.cshtml</code> (inside the recurrence section)</li>
+    </ul>
+
+    <h3>What to add:</h3>
+    <p>When the recurrence type is set to <code>Weekly</code>, you need to show checkboxes for each day of the week.</p>
+
+    <pre><code>
+&lt;!-- Only show this block if Recurrence.Type == Weekly --&gt;
+&lt;div class="form-group mb-3" id="weekly-days-selection"&gt;
+    &lt;label class="form-label"&gt;Days of Week&lt;/label&gt;
+    &lt;div&gt;
+        @@foreach (var day in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.DaysOfWeekFlags)).Cast&lt;PersonalToDo_Freelance.Domain.Enums.DaysOfWeekFlags&gt;().Where(d =&gt; d != PersonalToDo_Freelance.Domain.Enums.DaysOfWeekFlags.None))
+        {
+            &lt;div class="form-check form-check-inline"&gt;
+                &lt;input class="form-check-input" type="checkbox" name="Recurrence.SelectedDays" value="@@day" 
+                       @@(Model.Recurrence != null && Model.Recurrence.SelectedDays.Contains(day) ? "checked" : "")&gt;
+                &lt;label class="form-check-label"&gt;@@day.ToString()&lt;/label&gt;
+            &lt;/div&gt;
+        }
+    &lt;/div&gt;
+&lt;/div&gt;
+    </code></pre>
+    <p class="note">Note: Make sure your ViewModel binds these checkboxes to the <code>Recurrence.SelectedDays</code> list.</p>
+
+    <hr/>
+
+    <h2>3. File Attachments</h2>
+    <p>The backend now supports uploading and deleting file attachments for tasks.</p>
+
+    <h3>Where to add:</h3>
+    <ul>
+        <li><code>Views/Task/Details.cshtml</code></li>
+    </ul>
+
+    <h3>What to add:</h3>
+    <p>You need a form to upload new files, and a list of existing files with delete buttons.</p>
+
+    <h4>1. File Upload Form:</h4>
+    <p>Make sure the form tag has <code>enctype="multipart/form-data"</code>.</p>
+
+    <pre><code>
+&lt;form asp-action="UploadAttachment" asp-controller="Task" method="post" enctype="multipart/form-data"&gt;
+    &lt;input type="hidden" name="taskId" value="@@Model.Id" /&gt;
+    &lt;div class="input-group mb-3"&gt;
+        &lt;input type="file" name="file" class="form-control" required /&gt;
+        &lt;button class="btn btn-primary" type="submit"&gt;Upload&lt;/button&gt;
+    &lt;/div&gt;
+&lt;/form&gt;
+    </code></pre>
+
+    <h4>2. List of Attachments:</h4>
+    <p>Display the attachments using the <code>Attachments</code> property in <code>TaskDetailsViewModel</code>.</p>
+
+    <pre><code>
+@@if (Model.Attachments != null && Model.Attachments.Any())
+{
+    &lt;ul class="list-group mt-3"&gt;
+        @@foreach (var attachment in Model.Attachments)
+        {
+            &lt;li class="list-group-item d-flex justify-content-between align-items-center"&gt;
+                &lt;a href="@@attachment.FilePath" target="_blank"&gt;@@attachment.FileName&lt;/a&gt;
+                &lt;form asp-action="DeleteAttachment" asp-controller="Task" method="post" class="d-inline"&gt;
+                    &lt;input type="hidden" name="attachmentId" value="@@attachment.Id" /&gt;
+                    &lt;input type="hidden" name="taskId" value="@@Model.Id" /&gt;
+                    &lt;button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?');"&gt;Delete&lt;/button&gt;
+                &lt;/form&gt;
+            &lt;/li&gt;
+        }
+    &lt;/ul&gt;
+}
+    </code></pre>
+
+    <hr/>
+
+    <h2>Summary for Frontend Dev:</h2>
+    <ol>
+        <li>Bind the <strong>Status</strong> to the Create/Edit forms.</li>
+        <li>Bind the <strong>Days of Week Checkboxes</strong> to the <code>Recurrence.SelectedDays</code> property in the ViewModel.</li>
+        <li>Add the <strong>File Upload form</strong> and <strong>Attachment list</strong> to the Details view.</li>
+    </ol>
+
+</body>
+</html>

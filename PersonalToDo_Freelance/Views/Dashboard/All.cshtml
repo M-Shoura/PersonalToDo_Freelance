@@ -55,7 +55,7 @@
             </div>
         </div>
         <div class="col-6 col-md-2 col-lg-2">
-            <select name="Status" class="form-select form-select-sm">
+            <select name="Status" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">Status: All</option>
                 @foreach (var s in Enum.GetValues(typeof(PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus)).Cast<PersonalToDo_Freelance.Domain.Enums.TodoTaskStatus>())
                 {
@@ -72,7 +72,7 @@
             </select>
         </div>
         <div class="col-6 col-md-2 col-lg-2">
-            <select name="CategoryId" class="form-select form-select-sm">
+            <select name="CategoryId" class="form-select form-select-sm" onchange="this.form.submit()">
                 <option value="">Category: All</option>
                 @foreach (var c in cats)
                 {
@@ -88,14 +88,14 @@
             </select>
         </div>
         <div class="col-6 col-md-2 col-lg-2">
-            <select name="SortBy" class="form-select form-select-sm">
+            <select name="SortBy" class="form-select form-select-sm" onchange="this.form.submit()">
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.DueDate) { <option value="0" selected>Sort: Due Date</option> } else { <option value="0">Sort: Due Date</option> }
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Priority) { <option value="1" selected>Sort: Priority</option> } else { <option value="1">Sort: Priority</option> }
                 @if (q.SortBy == PersonalToDo_Freelance.Application.ViewModels.TaskSortField.Title) { <option value="5" selected>Sort: Title</option> } else { <option value="5">Sort: Title</option> }
             </select>
         </div>
         <div class="col-3 col-md-1 col-lg-1">
-            <select name="SortDirection" class="form-select form-select-sm">
+            <select name="SortDirection" class="form-select form-select-sm" onchange="this.form.submit()">
                 @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Asc) { <option value="0" selected>Asc</option> } else { <option value="0">Asc</option> }
                 @if (q.SortDirection == PersonalToDo_Freelance.Application.ViewModels.SortDirection.Desc) { <option value="1" selected>Desc</option> } else { <option value="1">Desc</option> }
             </select>

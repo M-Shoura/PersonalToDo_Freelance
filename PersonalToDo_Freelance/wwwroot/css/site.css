@@ -796,13 +796,24 @@ p, span, label {
 }
 
 tr.table-danger, .task-card-overdue {
+  --bs-table-bg: var(--tp-danger-light);
+  --bs-table-color: var(--tp-text-primary);
   background-color: var(--tp-danger-light) !important;
   border-left: 4px solid var(--tp-danger) !important;
 }
+tr.table-danger > td, tr.table-danger > th {
+  background-color: var(--tp-danger-light) !important;
+  color: var(--tp-text-primary) !important;
+}
 
 tr.table-success {
+  --bs-table-bg: var(--tp-success-light);
+  --bs-table-color: var(--tp-text-primary);
   background-color: var(--tp-success-light) !important;
-  opacity: 0.85;
+}
+tr.table-success > td, tr.table-success > th {
+  background-color: var(--tp-success-light) !important;
+  color: var(--tp-text-primary) !important;
 }
 
 /* Mobile Task Card */

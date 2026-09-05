@@ -4,35 +4,37 @@ using Microsoft.EntityFrameworkCore;
 using PersonalToDo_Freelance.Data;
 using PersonalToDo_Freelance.Domain.Entities;
 using PersonalToDo_Freelance.Domain.Enums;
-using PersonalToDo_Freelance.Infrastructure.Services;
 
 class Program
 {
     static void Main()
     {
-        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseInMemoryDatabase("dbg_stats").Options;
+        var connectionString = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? "Server=(localdb)\\mssqllocaldb;Database=PersonalToDoDb;Trusted_Connection=True;MultipleActiveResultSets=true";
+        var options = new DbContextOptionsBuilder<ApplicationDbContext>().UseSqlServer(connectionString).Options;
+        
         using var db = new ApplicationDbContext(options);
-        var start = new DateTime(2026,8,1);
-        var end = new DateTime(2026,8,7);
-        db.Tasks.Add(new TodoTask { UserId = "u1", Title = "C1", CreatedAt = start.AddDays(1), DueDate = start.AddDays(2), Priority = TaskPriority.Medium, Status = TodoTaskStatus.NotStarted });
-        db.Tasks.Add(new TodoTask { UserId = "u1", Title = "C2", CreatedAt = start.AddDays(2), DueDate = start.AddDays(3), Priority = TaskPriority.High, Status = TodoTaskStatus.Completed, CompletedAt = start.AddDays(3) });
-        db.Tasks.Add(new TodoTask { UserId = "u1", Title = "Old", CreatedAt = start.AddDays(-5), DueDate = start.AddDays(2), Priority = TaskPriority.Low, Status = TodoTaskStatus.NotStarted });
-        db.Tasks.Add(new TodoTask { UserId = "u1", Title = "OD", CreatedAt = start.AddDays(1), DueDate = start.AddDays(-1), Status = TodoTaskStatus.NotStarted });
-        db.Tasks.Add(new TodoTask { UserId = "other", Title = "Other", CreatedAt = start.AddDays(2), DueDate = start.AddDays(2), Status = TodoTaskStatus.NotStarted });
+        
+        var userId = "1faef5f4-8af9-48c9-b0ff-1cc0a0199754";
+        
+        // Insert a task due in 30 minutes to trigger the email reminder
+        var task = new TodoTask
+        {
+            UserId = userId,
+            Title = "Test Email Reminder Task",
+            Description = "This task was created to test the email reminder system.",
+            Priority = TaskPriority.High,
+            Status = TodoTaskStatus.NotStarted,
+            CreatedAt = DateTime.UtcNow,
+            DueDate = DateTime.UtcNow.AddMinutes(30),
+            UpdatedAt = DateTime.UtcNow,
+            IsDeleted = false,
+            ReminderSentAt = null
+        };
+        
+        db.Tasks.Add(task);
         db.SaveChanges();
-
-        var svc = new TaskService(db, new SimpleCurrentUser { UserId = "u1" });
-        var stats = svc.GetStatisticsAsync(start, end).GetAwaiter().GetResult();
-        Console.WriteLine($"TasksCreated: {stats.TasksCreated}");
-        Console.WriteLine($"TasksCompleted: {stats.TasksCompleted}");
-        Console.WriteLine($"PendingTasks: {stats.PendingTasks}");
-        Console.WriteLine($"OverdueTasks: {stats.OverdueTasks}");
-        Console.WriteLine($"CompletedPerDay count: {stats.CompletedPerDay.Count}");
+        Console.WriteLine("Mock task for email reminder inserted successfully!");
+        Console.WriteLine("Run the web application, and the ReminderWorker should pick it up immediately and send you an email.");
     }
-}
-
-class SimpleCurrentUser : PersonalToDo_Freelance.Application.Interfaces.ICurrentUserService
-{
-    public string? UserId { get; set; }
-    public System.Security.Claims.ClaimsPrincipal? User => null;
 }
